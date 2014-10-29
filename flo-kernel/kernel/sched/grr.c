@@ -82,7 +82,7 @@ static unsigned int get_rr_interval_grr(struct rq *rq, struct task_struct *task)
  * Simple, special scheduling class for the per-CPU idle tasks:
  */
 const struct sched_class grr_sched_class = {
-	/* .next is NULL */
+	.next			= &idle_sched_class,
 	/* no enqueue/yield_task for idle tasks */
 
 	/* dequeue is not valid, we print a debug message there: */

@@ -2976,6 +2976,7 @@ preempt:
 
 static struct task_struct *pick_next_task_fair(struct rq *rq)
 {
+	printk(KERN_ERR "~~~~~~ pick_next_task_fair: called !! ~~~~~~\n");
 	struct task_struct *p;
 	struct cfs_rq *cfs_rq = &rq->cfs;
 	struct sched_entity *se;
@@ -5536,7 +5537,7 @@ static unsigned int get_rr_interval_fair(struct rq *rq, struct task_struct *task
  * All the scheduling class methods:
  */
 const struct sched_class fair_sched_class = {
-	.next			= &idle_sched_class,
+	.next			= &grr_sched_class,
 	.enqueue_task		= enqueue_task_fair,
 	.dequeue_task		= dequeue_task_fair,
 	.yield_task		= yield_task_fair,

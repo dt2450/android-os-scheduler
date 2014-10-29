@@ -32,6 +32,14 @@ static struct task_struct *pick_next_task_grr(struct rq *rq)
 }
 
 /*
+ */
+static void
+enqueue_task_grr(struct rq *rq, struct task_struct *p, int flags)
+{
+	printk(KERN_ERR "enqueue_task_grr: called!!\n");
+}
+
+/*
  * It is not legal to sleep in the idle task - print a warning
  * message if some code attempts to do it:
  */
@@ -42,6 +50,11 @@ dequeue_task_grr(struct rq *rq, struct task_struct *p, int flags)
 	printk(KERN_ERR "bad: scheduling from the idle thread!\n");
 	dump_stack();
 	raw_spin_lock_irq(&rq->lock);
+}
+
+static void yield_task_grr(struct rq *rq)
+{
+	printk(KERN_ERR "yield_task_grr: called!!\n");
 }
 
 static void put_prev_task_grr(struct rq *rq, struct task_struct *prev)
@@ -83,10 +96,9 @@ static unsigned int get_rr_interval_grr(struct rq *rq, struct task_struct *task)
  */
 const struct sched_class grr_sched_class = {
 	.next			= &idle_sched_class,
-	/* no enqueue/yield_task for idle tasks */
-
-	/* dequeue is not valid, we print a debug message there: */
+	.enqueue_task		= enqueue_task_grr,
 	.dequeue_task		= dequeue_task_grr,
+	.yield_task             = yield_task_grr,
 
 	.check_preempt_curr	= check_preempt_curr_grr,
 
@@ -95,6 +107,15 @@ const struct sched_class grr_sched_class = {
 
 #ifdef CONFIG_SMP
 	.select_task_rq		= select_task_rq_grr,
+/*
+	.set_cpus_allowed       = set_cpus_allowed_rt,
+        .rq_online              = rq_online_rt,
+        .rq_offline             = rq_offline_rt,
+        .pre_schedule           = pre_schedule_rt,
+        .post_schedule          = post_schedule_rt,
+        .task_woken             = task_woken_rt,
+        .switched_from          = switched_from_rt,
+*/
 #endif
 
 	.set_curr_task          = set_curr_task_grr,

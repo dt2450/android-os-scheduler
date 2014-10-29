@@ -2976,7 +2976,6 @@ preempt:
 
 static struct task_struct *pick_next_task_fair(struct rq *rq)
 {
-	printk(KERN_ERR "~~~~~~ pick_next_task_fair: called !! ~~~~~~\n");
 	struct task_struct *p;
 	struct cfs_rq *cfs_rq = &rq->cfs;
 	struct sched_entity *se;

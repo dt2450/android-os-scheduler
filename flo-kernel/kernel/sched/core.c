@@ -4860,6 +4860,16 @@ out_unlock:
 	return retval;
 }
 
+/* This system call will assign numCPU to the given group,
+ * and assign (totalCPU - numCPU) to the other group.
+ * System call number 378.
+*/
+SYSCALL_DEFINE2(sched_set_CPUgroup, int, numCPU, int, group)
+{
+	pr_err("sched_set_CPUgroup: numCPU=%d, group=%d\n", numCPU, group);
+	return 378;
+}
+
 static const char stat_nam[] = TASK_STATE_TO_CHAR_STR;
 
 void sched_show_task(struct task_struct *p)
@@ -8306,6 +8316,8 @@ void cpuacct_charge(struct task_struct *tsk, u64 cputime)
 
 	rcu_read_unlock();
 }
+
+
 
 struct cgroup_subsys cpuacct_subsys = {
 	.name = "cpuacct",

@@ -43,6 +43,12 @@ extern __read_mostly int scheduler_running;
  */
 #define RUNTIME_INF	((u64)~0ULL)
 
+
+/*For HW4*/
+#define FOREGROUND 1
+#define BACKGROUND 2
+
+
 static inline int rt_policy(int policy)
 {
 	if (policy == SCHED_FIFO || policy == SCHED_RR)

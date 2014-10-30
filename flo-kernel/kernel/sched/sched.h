@@ -320,7 +320,9 @@ struct rt_rq {
 
 /* GRR related field in a runqueue: */
 struct grr_rq {
-	struct rt_prio_array active;
+	/* we have only one q, not using the array */
+	struct list_head queue;
+
 	unsigned long rt_nr_running;
 #if defined CONFIG_SMP || defined CONFIG_RT_GROUP_SCHED
 	struct {

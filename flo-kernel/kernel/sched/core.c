@@ -4885,7 +4885,7 @@ SYSCALL_DEFINE2(sched_set_CPUgroup, int, numCPU, int, group)
 	struct sched_param param;
 	int result = 0;
 	int current_policy = 0;
-	param.sched_priority = 70;
+	param.sched_priority = 0;
 
 	pr_err("sched_set_CPUgroup: numCPU=%d, group=%d\n", numCPU, group);
 	current_policy = sys_sched_getscheduler(sys_getpid());

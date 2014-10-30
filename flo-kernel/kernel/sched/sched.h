@@ -51,7 +51,7 @@ extern __read_mostly int scheduler_running;
 
 static inline int rt_policy(int policy)
 {
-	if (policy == SCHED_FIFO || policy == SCHED_RR || policy == SCHED_GRR)
+	if (policy == SCHED_FIFO || policy == SCHED_RR)
 		return 1;
 	return 0;
 }

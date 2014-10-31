@@ -4062,8 +4062,12 @@ __setscheduler(struct rq *rq, struct task_struct *p, int policy, int prio)
 	p->prio = rt_mutex_getprio(p);
 	if (rt_prio(p->prio))
 		p->sched_class = &rt_sched_class;
-	else
-		p->sched_class = &fair_sched_class;
+	else {
+		if (policy == SCHED_GRR)
+			p->sched_class = &grr_sched_class;
+		else
+			p->sched_class = &fair_sched_class;
+	}
 	set_load_weight(p);
 }
 
@@ -4894,6 +4898,9 @@ SYSCALL_DEFINE2(sched_set_CPUgroup, int, numCPU, int, group)
 	read_lock(&tasklist_lock);
 	result = sched_setscheduler(current, SCHED_GRR,
 			(const struct sched_param *)&param);
+	pr_err("grr class = 0x%x current class = 0x%x, fair class = 0x%x\n",
+			&grr_sched_class, current->sched_class,
+			&fair_sched_class);
 	read_unlock(&tasklist_lock);
 	current_policy = sys_sched_getscheduler(sys_getpid());
 	pr_err("sched_set_CPUgroup: new policy is %d\n", current_policy);

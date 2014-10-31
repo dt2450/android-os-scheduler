@@ -17,7 +17,7 @@ int main(int argc, char **argv)
 	if(ret == -1)
 		printf("error is: %s\n", strerror(errno));
 	while(1) {
-		printf("Running now..\n");
+		printf("Running now.. pid %d\n", getpid());
 		printf("%d\n", syscall(__NR_sched_getscheduler, getpid()));
 		sched_yield();
 	}

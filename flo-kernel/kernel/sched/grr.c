@@ -78,8 +78,8 @@ static void check_preempt_curr_grr(struct rq *rq, struct task_struct *p,
 		int flags)
 {
 	printk(KERN_ERR "check_preempt_curr_grr: called!\n");
-	//TODO: if time slice has expired then
-	resched_task(rq->grrt);
+	//TODO: we don't have priority based scheduling
+	//resched_task(rq->curr);
 }
 
 static struct task_struct *pick_next_task_grr(struct rq *rq)
@@ -88,11 +88,12 @@ static struct task_struct *pick_next_task_grr(struct rq *rq)
 	struct grr_rq *grr_rq = &rq->grr;
 	struct sched_grr_entity *grr_se;
 
-	printk(KERN_ERR "pick_next_task_grr: called!\n");
+	printk(KERN_ERR "pick_next_task_grr: 1. called!\n");
 
 	if (!grr_rq->grr_nr_running)
 		return NULL;
 
+	printk(KERN_ERR "pick_next_task_grr: 2. called!\n");
 	grr_se = pick_next_grr_entity(rq, grr_rq);
 	BUG_ON(!grr_se);
 
@@ -115,12 +116,14 @@ enqueue_task_grr(struct rq *rq, struct task_struct *p, int flags)
 		grr_se->timeout = 0;
 
 	list_add_tail(&grr_se->run_list, &grr_rq->queue);
+
 	//TODO: ???
 #if 0
 	if (!task_current(rq, p) && p->rt.nr_cpus_allowed > 1)
 		enqueue_pushable_task(rq, p);
 #endif
 
+	grr_rq->grr_nr_running++;
 	inc_nr_running(rq);
 }
 
@@ -133,6 +136,7 @@ static void
 dequeue_task_grr(struct rq *rq, struct task_struct *p, int flags)
 {
 	struct sched_grr_entity *grr_se = &p->grre;
+	struct grr_rq *grr_rq = grr_rq_of_se(grr_se);
 
 	printk(KERN_ERR "dequeue_task_grr: called!!\n");
 	//TODO: Update the stats
@@ -140,6 +144,7 @@ dequeue_task_grr(struct rq *rq, struct task_struct *p, int flags)
 	//TODO: How to dequeue task?? Do we insert at end of queue?
 	//dequeue_rt_entity(rt_se);
 
+	grr_rq->grr_nr_running--;
 	dec_nr_running(rq);
 }
 
@@ -153,27 +158,77 @@ static void put_prev_task_grr(struct rq *rq, struct task_struct *prev)
 	printk(KERN_ERR "put_prev_task_grr: called!!\n");
 }
 
-static void task_tick_grr(struct rq *rq, struct task_struct *curr, int queued)
+/*
+ * Put task to the head or the end of the run list without the overhead of
+ * dequeue followed by enqueue.
+ */
+static void
+requeue_grr_entity(struct grr_rq *grr_rq, struct sched_grr_entity *grr_se,
+		int head)
 {
+	if (on_grr_rq(grr_se)) {
+		struct list_head *queue = &grr_rq->queue;
+
+		if (head)
+			list_move(&grr_se->run_list, queue);
+		else
+			list_move_tail(&grr_se->run_list, queue);
+	}
+}
+
+static void requeue_task_grr(struct rq *rq, struct task_struct *p, int head)
+{
+	struct sched_grr_entity *grr_se = &p->grre;
+	struct grr_rq *grr_rq = grr_rq_of_se(grr_se);
+
+	requeue_grr_entity(grr_rq, grr_se, head);
+}
+
+static void task_tick_grr(struct rq *rq, struct task_struct *p, int queued)
+{
+	struct sched_grr_entity *grr_se = &p->grre;
+
 	printk(KERN_ERR "task_tick_grr: called!!\n");
+
+	if (p->policy != SCHED_GRR)
+		return;
+
+	if (--p->grre.time_slice)
+		return;
+
+	p->grre.time_slice = GRR_TIMESLICE;
+
+	if (grr_se->run_list.prev != grr_se->run_list.next) {
+		requeue_task_grr(rq, p, 0);
+		set_tsk_need_resched(p);
+		return;
+	}
 }
 
 static void set_curr_task_grr(struct rq *rq)
 {
+	struct task_struct *p = rq->curr;
+
 	printk(KERN_ERR "set_curr_task_grr: called!!\n");
+	p->grre.exec_start = rq->clock_task;
 }
 
 static void switched_to_grr(struct rq *rq, struct task_struct *p)
 {
 	printk(KERN_ERR "switched_to_grr: called!!\n");
-	BUG();
+	if (!p->se.on_rq)
+		return;
+
+	if (rq->curr == p)
+		resched_task(rq->curr);
+	else
+		check_preempt_curr(rq, p, 0);
 }
 
 static void
 prio_changed_grr(struct rq *rq, struct task_struct *p, int oldprio)
 {
 	printk(KERN_ERR "prio_changed_grr: called!!\n");
-	BUG();
 }
 
 static unsigned int get_rr_interval_grr(struct rq *rq, struct task_struct *task)

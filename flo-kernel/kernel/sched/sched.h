@@ -345,6 +345,11 @@ struct grr_rq {
 	struct plist_head pushable_tasks;
 #endif
 #endif
+	/*
+	 * 'curr' points to currently running entity on this cfs_rq.
+	 * It is set to NULL otherwise (i.e when none are currently running).
+	 */
+	struct sched_grr_entity *curr;
 	int grr_throttled;
 	u64 grr_time;
 	u64 grr_runtime;

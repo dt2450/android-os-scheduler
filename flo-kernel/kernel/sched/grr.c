@@ -67,13 +67,17 @@ static struct sched_grr_entity *pick_next_grr_entity(struct rq *rq,
 						   struct grr_rq *grr_rq)
 {
 	struct list_head *queue = &grr_rq->queue;
-	return list_entry(queue->next, struct sched_grr_entity, run_list);
+	struct sched_grr_entity * grr_se = list_entry(queue->next, struct
+			sched_grr_entity, run_list);
+	//set_next_entity done below
+	grr_rq->curr = grr_se;
+	return grr_se;
 }
 
 /*
  * Idle tasks are unconditionally rescheduled:
  */
-
+//TODO: To be implemented?
 static void check_preempt_curr_grr(struct rq *rq, struct task_struct *p,
 		int flags)
 {
@@ -116,6 +120,7 @@ enqueue_task_grr(struct rq *rq, struct task_struct *p, int flags)
 		grr_se->timeout = 0;
 
 	list_add_tail(&grr_se->run_list, &grr_rq->queue);
+	grr_se->on_rq = 1;
 
 	//TODO: ???
 #if 0
@@ -127,7 +132,25 @@ enqueue_task_grr(struct rq *rq, struct task_struct *p, int flags)
 	inc_nr_running(rq);
 }
 
-//TODO: To be implemented from here ----
+static void __dequeue_entity(struct sched_grr_entity *grr_se)
+{
+	printk(KERN_ERR "__dequeue_entity: Deleting from list\n");
+	list_del(&grr_se->run_list);
+}
+
+static inline struct task_struct *task_of(struct sched_grr_entity *grr_se)
+{
+	return container_of(grr_se, struct task_struct, grre);
+}
+
+static inline struct grr_rq *grr_rq_of(struct sched_grr_entity *grr_se)
+{
+	struct task_struct *p = task_of(grr_se);
+	struct rq *rq = task_rq(p);
+
+	return &rq->grr;
+}
+
 /*
  * It is not legal to sleep in the idle task - print a warning
  * message if some code attempts to do it:
@@ -139,13 +162,13 @@ dequeue_task_grr(struct rq *rq, struct task_struct *p, int flags)
 	struct grr_rq *grr_rq = grr_rq_of_se(grr_se);
 
 	printk(KERN_ERR "dequeue_task_grr: called!!\n");
-	//TODO: Update the stats
-	//update_curr_rt(rq);
-	//TODO: How to dequeue task?? Do we insert at end of queue?
-	//dequeue_rt_entity(rt_se);
-
-	grr_rq->grr_nr_running--;
-	dec_nr_running(rq);
+	if ((grr_rq && grr_rq->grr_nr_running) && (grr_se != grr_rq->curr)) {
+		__dequeue_entity(grr_se);
+		//TODO: To verify
+		grr_rq->grr_nr_running--;
+		dec_nr_running(rq);
+	}
+	grr_se->on_rq = 0;
 }
 
 static void yield_task_grr(struct rq *rq)
@@ -153,9 +176,24 @@ static void yield_task_grr(struct rq *rq)
 	printk(KERN_ERR "yield_task_grr: called!!\n");
 }
 
+static void put_prev_entity(struct grr_rq *grr_rq,
+		struct sched_grr_entity *prev)
+{
+	if (prev->on_rq) {
+		list_del(&prev->run_list);
+		list_add_tail(&prev->run_list, &grr_rq->queue);
+	}
+	grr_rq->curr = NULL;
+}
+
 static void put_prev_task_grr(struct rq *rq, struct task_struct *prev)
 {
+	struct sched_grr_entity *grr_se = &prev->grre;
+	struct grr_rq *grr_rq = grr_rq_of(grr_se);
+
 	printk(KERN_ERR "put_prev_task_grr: called!!\n");
+
+	put_prev_entity(grr_rq, grr_se);
 }
 
 /*
@@ -188,17 +226,23 @@ static void task_tick_grr(struct rq *rq, struct task_struct *p, int queued)
 {
 	struct sched_grr_entity *grr_se = &p->grre;
 
-	printk(KERN_ERR "task_tick_grr: called!!\n");
+	printk(KERN_ERR "task_tick_grr: called!! pid = %d pol = %d ",
+			p->pid, p->policy);
 
+	printk(KERN_ERR "slice = %d\n", p->grre.time_slice);
 	if (p->policy != SCHED_GRR)
 		return;
 
-	if (--p->grre.time_slice)
+	if (--p->grre.time_slice) {
+		printk(KERN_ERR "+");
 		return;
+	}
+	printk(KERN_ERR "Done..\n");
 
 	p->grre.time_slice = GRR_TIMESLICE;
 
 	if (grr_se->run_list.prev != grr_se->run_list.next) {
+		printk(KERN_ERR "tick: Requeuing task\n");
 		requeue_task_grr(rq, p, 0);
 		set_tsk_need_resched(p);
 		return;
@@ -208,15 +252,19 @@ static void task_tick_grr(struct rq *rq, struct task_struct *p, int queued)
 static void set_curr_task_grr(struct rq *rq)
 {
 	struct task_struct *p = rq->curr;
+	struct sched_grr_entity *grr_se = &rq->curr->grre;
+	struct grr_rq *grr_rq = grr_rq_of(grr_se);
+	//TODO: Try using rq->curr
 
 	printk(KERN_ERR "set_curr_task_grr: called!!\n");
 	p->grre.exec_start = rq->clock_task;
+	grr_rq->curr = grr_se;
 }
 
 static void switched_to_grr(struct rq *rq, struct task_struct *p)
 {
 	printk(KERN_ERR "switched_to_grr: called!!\n");
-	if (!p->se.on_rq)
+	if (!p->grre.on_rq)
 		return;
 
 	if (rq->curr == p)
@@ -231,6 +279,7 @@ prio_changed_grr(struct rq *rq, struct task_struct *p, int oldprio)
 	printk(KERN_ERR "prio_changed_grr: called!!\n");
 }
 
+//TODO: Do we have to implement this?
 static unsigned int get_rr_interval_grr(struct rq *rq, struct task_struct *task)
 {
 	printk(KERN_ERR "get_rr_interval_grr: called!!\n");
@@ -241,6 +290,7 @@ static unsigned int get_rr_interval_grr(struct rq *rq, struct task_struct *task)
  * Simple, special scheduling class for the per-CPU idle tasks:
  */
 const struct sched_class grr_sched_class = {
+	//TODO: Move at correct location
 	.next			= &idle_sched_class,
 	.enqueue_task		= enqueue_task_grr,
 	.dequeue_task		= dequeue_task_grr,

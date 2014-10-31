@@ -1250,10 +1250,11 @@ struct sched_rt_entity {
 };
 
 struct sched_grr_entity {
-	struct load_weight	load;		/* for load-balancing */
 	struct list_head	run_list;
-	unsigned long timeout;
-	unsigned int time_slice;
+	unsigned long		timeout;
+	unsigned int		time_slice;
+	struct load_weight	load;		/* for load-balancing */
+	unsigned int		on_rq;
 	//for debugging
 #if 0
 	struct rb_node		run_node;

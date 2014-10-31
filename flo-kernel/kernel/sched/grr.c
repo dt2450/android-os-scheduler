@@ -101,7 +101,6 @@ static struct task_struct *pick_next_task_grr(struct rq *rq)
 	return p;
 }
 
-//TODO: To be implemented from here ----
 /*
  */
 static void
@@ -125,6 +124,7 @@ enqueue_task_grr(struct rq *rq, struct task_struct *p, int flags)
 	inc_nr_running(rq);
 }
 
+//TODO: To be implemented from here ----
 /*
  * It is not legal to sleep in the idle task - print a warning
  * message if some code attempts to do it:

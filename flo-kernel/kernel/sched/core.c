@@ -4886,7 +4886,8 @@ SYSCALL_DEFINE2(sched_set_CPUgroup, int, numCPU, int, group)
 	int result = 0;
 	int current_policy = 0;
 	param.sched_priority = 0;
-
+	//This implementation needs to be replaced. Below code is only
+	//for current testing and not meant to be here
 	pr_err("sched_set_CPUgroup: numCPU=%d, group=%d\n", numCPU, group);
 	current_policy = sys_sched_getscheduler(sys_getpid());
 	pr_err("sched_set_CPUgroup: current policy is %d\n", current_policy);
@@ -7043,6 +7044,7 @@ void __init sched_init(void)
 		rq->calc_load_update = jiffies + LOAD_FREQ;
 		init_cfs_rq(&rq->cfs);
 		init_rt_rq(&rq->rt, rq);
+		init_grr_rq(&rq->grr);
 #ifdef CONFIG_FAIR_GROUP_SCHED
 		root_task_group.shares = ROOT_TASK_GROUP_LOAD;
 		INIT_LIST_HEAD(&rq->leaf_cfs_rq_list);

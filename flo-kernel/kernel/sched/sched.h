@@ -323,7 +323,9 @@ struct grr_rq {
 	/* we have only one q, not using the array */
 	struct list_head queue;
 
-	unsigned long rt_nr_running;
+	unsigned long grr_nr_running;
+	//for debugging we don't need priorities
+#if 0
 #if defined CONFIG_SMP || defined CONFIG_RT_GROUP_SCHED
 	struct {
 		int curr; /* highest queued rt task prio */
@@ -332,24 +334,33 @@ struct grr_rq {
 #endif
 	} highest_prio;
 #endif
+#endif
+	//for debugging
+	//enable on a need basis
+#if 0
 #ifdef CONFIG_SMP
-	unsigned long rt_nr_migratory;
-	unsigned long rt_nr_total;
+	unsigned long grr_nr_migratory;
+	unsigned long grr_nr_total;
 	int overloaded;
 	struct plist_head pushable_tasks;
 #endif
-	int rt_throttled;
-	u64 rt_time;
-	u64 rt_runtime;
+#endif
+	int grr_throttled;
+	u64 grr_time;
+	u64 grr_runtime;
 	/* Nests inside the rq lock: */
-	raw_spinlock_t rt_runtime_lock;
+	raw_spinlock_t grr_runtime_lock;
 
+	//for debugging we don't care about this
+	//as mentioned in class
+#if 0
 #ifdef CONFIG_RT_GROUP_SCHED
 	unsigned long rt_nr_boosted;
 
 	struct rq *rq;
 	struct list_head leaf_rt_rq_list;
 	struct task_group *tg;
+#endif
 #endif
 };
 
@@ -434,7 +445,7 @@ struct rq {
 	 */
 	unsigned long nr_uninterruptible;
 
-	struct task_struct *curr, *idle, *stop;
+	struct task_struct *curr, *idle, *grrt, *stop;
 	unsigned long next_balance;
 	struct mm_struct *prev_mm;
 
@@ -1201,6 +1212,7 @@ extern void print_rt_stats(struct seq_file *m, int cpu);
 
 extern void init_cfs_rq(struct cfs_rq *cfs_rq);
 extern void init_rt_rq(struct rt_rq *rt_rq, struct rq *rq);
+extern void init_grr_rq(struct grr_rq *grr_rq);
 extern void unthrottle_offline_cfs_rqs(struct rq *rq);
 
 extern void account_cfs_bandwidth_used(int enabled, int was_enabled);

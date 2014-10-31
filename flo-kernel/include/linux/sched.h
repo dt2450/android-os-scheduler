@@ -1249,6 +1249,38 @@ struct sched_rt_entity {
 #endif
 };
 
+struct sched_grr_entity {
+	struct load_weight	load;		/* for load-balancing */
+	struct list_head	run_list;
+	//for debugging
+#if 0
+	struct rb_node		run_node;
+	struct list_head	group_node;
+	unsigned int		on_rq;
+#endif
+	u64			exec_start;
+	u64			sum_exec_runtime;
+	//u64			vruntime;
+	u64			prev_sum_exec_runtime;
+
+	u64			nr_migrations;
+
+#ifdef CONFIG_SCHEDSTATS
+	struct sched_statistics statistics;
+#endif
+
+	//for debugging
+#if 0
+#ifdef CONFIG_FAIR_GROUP_SCHED
+	struct sched_entity	*parent;
+	/* rq on which this entity is (to be) queued: */
+	struct cfs_rq		*cfs_rq;
+	/* rq "owned" by this entity/group: */
+	struct cfs_rq		*my_q;
+#endif
+#endif
+};
+
 /*
  * default timeslice is 100 msecs (used only for SCHED_RR tasks).
  * Timeslices get refilled after they expire.
@@ -1282,6 +1314,7 @@ struct task_struct {
 	const struct sched_class *sched_class;
 	struct sched_entity se;
 	struct sched_rt_entity rt;
+	struct sched_grr_entity grre;
 
 #ifdef CONFIG_PREEMPT_NOTIFIERS
 	/* list of struct preempt_notifier: */

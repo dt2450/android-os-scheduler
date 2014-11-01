@@ -1,14 +1,16 @@
 #include "sched.h"
+#include <linux/smp.h>
 
 /*
  * grr scheduling class.
  *
  */
 
-int ccc = 0;
-int ddd = 0;
 atomic_t load_balance_time_slice;
  
+//int ccc = 0;
+//int ddd = 0;
+
 static inline struct task_struct *grr_task_of(struct sched_grr_entity *grr_se)
 {
 	return container_of(grr_se, struct task_struct, grre);
@@ -21,13 +23,13 @@ void printlist(struct grr_rq *grr_rq)
 	struct sched_grr_entity *grr_se = NULL;
 	struct grr_rq *temp_grr_rq = NULL;
 	int i = 0;
-	
+
 	if (grr_rq == NULL) {
 		printk("grr_rq is NULL\n");
 		return;
 	}
 
-	printk("Contents of queue:");
+	printk("Contents of queue: ");
 	list_for_each(p, &grr_rq->queue) {
 		i++;
 		/*
@@ -40,7 +42,7 @@ void printlist(struct grr_rq *grr_rq)
 		printk(" %d", t->pid);
 		*/
 	}
-	printk("Size of queue: %d\n", i);
+	printk("[cpu %d]Size of queue: %d\n", smp_processor_id(), i);
 }
 
 #ifdef CONFIG_SMP
@@ -48,7 +50,8 @@ void printlist(struct grr_rq *grr_rq)
 static int
 select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 {
-	printk(KERN_ERR "select_task_rq_grr: called!\n");
+	printk(KERN_ERR "[cpu %d]select_task_rq_grr: called!\n",
+			smp_processor_id());
 	return task_cpu(p); /* IDLE tasks as never migrated */
 }
 #endif /* CONFIG_SMP */
@@ -115,7 +118,8 @@ static struct sched_grr_entity *pick_next_grr_entity(struct rq *rq,
 static void check_preempt_curr_grr(struct rq *rq, struct task_struct *p,
 		int flags)
 {
-	//printk(KERN_ERR "check_preempt_curr_grr: called!\n");
+	//printk(KERN_ERR "[cpu %d]check_preempt_curr_grr: called!\n",
+	//smp_processor_id());
 	//TODO: we don't have priority based scheduling
 	//resched_task(rq->curr);
 }
@@ -127,12 +131,14 @@ static struct task_struct *pick_next_task_grr(struct rq *rq)
 	struct sched_grr_entity *grr_se;
 
 	//if (++ccc%1000 == 0)
-	//printk(KERN_ERR "pick_next_task_grr: 1. called!\n");
+	//printk(KERN_ERR "[cpu %d]pick_next_task_grr: 1. called!\n",
+	//smp_processor_id());
 
 	if (!grr_rq->grr_nr_running)
 		return NULL;
 
-	//printk(KERN_ERR "pick_next_task_grr: 2. called!\n");
+	//printk(KERN_ERR "[cpu %d]pick_next_task_grr: 2. called!\n",
+	//smp_processor_id());
 	grr_se = pick_next_grr_entity(rq, grr_rq);
 	BUG_ON(!grr_se);
 
@@ -149,7 +155,8 @@ enqueue_task_grr(struct rq *rq, struct task_struct *p, int flags)
 	struct sched_grr_entity *grr_se = &p->grre;
 	struct grr_rq *grr_rq = grr_rq_of_se(grr_se);
 
-	printk(KERN_ERR "enqueue_task_grr: called!!\n");
+	printk(KERN_ERR "[cpu %d]enqueue_task_grr: called!!\n",
+			smp_processor_id());
 	printlist(grr_rq);
 
 	if (flags & ENQUEUE_WAKEUP)
@@ -171,7 +178,8 @@ enqueue_task_grr(struct rq *rq, struct task_struct *p, int flags)
 
 static void __dequeue_entity(struct sched_grr_entity *grr_se)
 {
-	printk(KERN_ERR "__dequeue_entity: Deleting from list\n");
+	printk(KERN_ERR "[cpu %d]__dequeue_entity: Deleting from list\n",
+			smp_processor_id());
 	list_del(&grr_se->run_list);
 }
 
@@ -198,9 +206,10 @@ dequeue_task_grr(struct rq *rq, struct task_struct *p, int flags)
 	struct sched_grr_entity *grr_se = &p->grre;
 	struct grr_rq *grr_rq = grr_rq_of_se(grr_se);
 
-	printk(KERN_ERR "dequeue_task_grr: called!!\n");
+	printk(KERN_ERR "[cpu %d]dequeue_task_grr: called!!\n",
+			smp_processor_id());
 	printlist(grr_rq);
-	printk("dequeue_task_grr: grr_rq:%x, grr_rq->grr_nr_running:%d, grr_se:%x, grr_rq->curr:%x\n", grr_rq, grr_rq->grr_nr_running, grr_se, grr_rq->curr);
+	printk("dequeue_task_grr: grr_rq:%x, grr_rq->grr_nr_running:%d, grr_se:%x, grr_rq->curr:%x\n", smp_processor_id(), grr_rq, grr_rq->grr_nr_running, grr_se, grr_rq->curr);
 	//if ((grr_rq && grr_rq->grr_nr_running) && (grr_se != grr_rq->curr)) {
 	if (grr_rq && grr_rq->grr_nr_running) {
 		__dequeue_entity(grr_se);
@@ -214,7 +223,8 @@ dequeue_task_grr(struct rq *rq, struct task_struct *p, int flags)
 
 static void yield_task_grr(struct rq *rq)
 {
-	//printk(KERN_ERR "yield_task_grr: called!!\n");
+	//printk(KERN_ERR "[cpu %d]yield_task_grr: called!!\n",
+	//smp_processor_id());
 }
 
 static void put_prev_entity(struct grr_rq *grr_rq,
@@ -232,7 +242,8 @@ static void put_prev_task_grr(struct rq *rq, struct task_struct *prev)
 	struct sched_grr_entity *grr_se = &prev->grre;
 	struct grr_rq *grr_rq = grr_rq_of(grr_se);
 
-	//printk(KERN_ERR "put_prev_task_grr: called!!\n");
+	//printk(KERN_ERR "[cpu %d]put_prev_task_grr: called!!\n",
+	//smp_processor_id());
 
 	put_prev_entity(grr_rq, grr_se);
 }
@@ -260,6 +271,9 @@ static void requeue_task_grr(struct rq *rq, struct task_struct *p, int head)
 	struct sched_grr_entity *grr_se = &p->grre;
 	struct grr_rq *grr_rq = grr_rq_of_se(grr_se);
 
+	printk(KERN_ERR "[cpu %d]requeue_task_grr: Requeuing pid %d\n",
+			smp_processor_id(), p->pid);
+
 	requeue_grr_entity(grr_rq, grr_se, head);
 }
 
@@ -267,32 +281,33 @@ static void task_tick_grr(struct rq *rq, struct task_struct *p, int queued)
 {
 	struct sched_grr_entity *grr_se = &p->grre;
 //	if (p->grre.time_slice < 0) {
-//		printk(KERN_ERR "task_tick_grr: p->grre.time_slice is garbage: %d, resetting to %d\n", p->grre.time_slice, GRR_TIMESLICE);
+//		printk(KERN_ERR "[cpu %d]task_tick_grr: p->grre.time_slice is garbage: %d, resetting to %d\n", smp_processor_id(), p->grre.time_slice, GRR_TIMESLICE);
 //		p->grre.time_slice = GRR_TIMESLICE;
 //	} else {
-//		printk(KERN_ERR "task_tick_grr: p->grre.time_slice is valid: %d\n", p->grre.time_slice);
+//		printk(KERN_ERR "[cpu %d]task_tick_grr: p->grre.time_slice is valid: %d\n", smp_processor_id(), p->grre.time_slice);
 //	}
 
 	//if (++ddd%300 == 0)
-//	printk(KERN_ERR "task_tick_grr: called!! pid = %d pol = %d, slice = %d\n",
-//			p->pid, p->policy, p->grre.time_slice);
+//	printk(KERN_ERR "[cpu %d]task_tick_grr: called!! pid = %d pol = %d, slice = %d\n",
+//		 smp_processor_id(), p->pid, p->policy, p->grre.time_slice);
 
 //	if (p->grre.time_slice == 1)
-//		printk(KERN_ERR "\n\n\n\n\n\n\ntask_tick_grr: BECAME ONE, NEXT TIME ZERO\n\n\n\n\n\n\n");
+//		printk(KERN_ERR "[cpu %d]\n\n\n\n\n\n\ntask_tick_grr: BECAME ONE, NEXT TIME ZERO\n\n\n\n\n\n\n", smp_processor_id());
 
 	if (p->policy != SCHED_GRR)
 		return;
 
 	if (--p->grre.time_slice) {
-	//	printk(KERN_ERR "+");
+	//	printk(KERN_ERR "[cpu %d]+", smp_processor_id());
 		return;
 	}
-//	printk(KERN_ERR "Done..\n");
+//	printk(KERN_ERR "[cpu %d]Done..\n", smp_processor_id());
 
 	p->grre.time_slice = GRR_TIMESLICE;
 
 	if (grr_se->run_list.prev != grr_se->run_list.next) {
-		printk(KERN_ERR "tick: Requeuing task: %d\n", p->pid);
+		printk(KERN_ERR "[cpu %d]tick: Requeuing task: %d\n",
+				smp_processor_id(), p->pid);
 		requeue_task_grr(rq, p, 0);
 		set_tsk_need_resched(p);
 		return;
@@ -306,15 +321,17 @@ static void set_curr_task_grr(struct rq *rq)
 	struct grr_rq *grr_rq = grr_rq_of(grr_se);
 	//TODO: Try using rq->curr
 
-	printk(KERN_ERR "set_curr_task_grr: called!!\n");
+	printk(KERN_ERR "[cpu %d]set_curr_task_grr: called!!\n",
+			smp_processor_id());
 	p->grre.exec_start = rq->clock_task;
 	grr_rq->curr = grr_se;
-	printk("set_curr_task_grr: grr_rq: %x, grr_rq->curr: %x, rq->curr: %x\n", grr_rq, grr_rq->curr, rq->curr);
+	printk("[cpu %d]set_curr_task_grr: grr_rq: %x, grr_rq->curr: %x, rq->curr: %x\n", smp_processor_id(), grr_rq, grr_rq->curr, rq->curr);
 }
 
 static void switched_to_grr(struct rq *rq, struct task_struct *p)
 {
-	printk(KERN_ERR "switched_to_grr: called!!\n");
+	printk(KERN_ERR "[cpu %d]switched_to_grr: called!!\n",
+			smp_processor_id());
 	if (!p->grre.on_rq)
 		return;
 
@@ -327,13 +344,15 @@ static void switched_to_grr(struct rq *rq, struct task_struct *p)
 static void
 prio_changed_grr(struct rq *rq, struct task_struct *p, int oldprio)
 {
-	printk(KERN_ERR "prio_changed_grr: called!!\n");
+	printk(KERN_ERR "[cpu %d]prio_changed_grr: called!!\n",
+			smp_processor_id());
 }
 
 //TODO: Do we have to implement this?
 static unsigned int get_rr_interval_grr(struct rq *rq, struct task_struct *task)
 {
-	printk(KERN_ERR "get_rr_interval_grr: called!!\n");
+	printk(KERN_ERR "[cpu %d]get_rr_interval_grr: called!!\n",
+			smp_processor_id());
 	if (task->policy == SCHED_GRR)
                 return GRR_TIMESLICE;
         else

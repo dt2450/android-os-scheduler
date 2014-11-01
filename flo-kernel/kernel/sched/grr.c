@@ -291,7 +291,7 @@ static void task_tick_grr(struct rq *rq, struct task_struct *p, int queued)
 	p->grre.time_slice = GRR_TIMESLICE;
 
 	if (grr_se->run_list.prev != grr_se->run_list.next) {
-		printk(KERN_ERR "tick: Requeuing task\n");
+		printk(KERN_ERR "tick: Requeuing task: %d\n", p->pid);
 		requeue_task_grr(rq, p, 0);
 		set_tsk_need_resched(p);
 		return;

@@ -159,6 +159,10 @@ extern struct cred init_cred;
 		.time_slice	= RR_TIMESLICE,				\
 		.nr_cpus_allowed = NR_CPUS,				\
 	},								\
+	.grre		= {						\
+		.run_list	= LIST_HEAD_INIT(tsk.grre.run_list),	\
+		.time_slice	= GRR_TIMESLICE,				\
+	},								\
 	.tasks		= LIST_HEAD_INIT(tsk.tasks),			\
 	INIT_PUSHABLE_TASKS(tsk)					\
 	.ptraced	= LIST_HEAD_INIT(tsk.ptraced),			\

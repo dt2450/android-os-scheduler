@@ -265,12 +265,12 @@ static void requeue_task_grr(struct rq *rq, struct task_struct *p, int head)
 static void task_tick_grr(struct rq *rq, struct task_struct *p, int queued)
 {
 	struct sched_grr_entity *grr_se = &p->grre;
-	if (p->grre.time_slice < 0) {
+//	if (p->grre.time_slice < 0) {
 //		printk(KERN_ERR "task_tick_grr: p->grre.time_slice is garbage: %d, resetting to %d\n", p->grre.time_slice, GRR_TIMESLICE);
-		p->grre.time_slice = GRR_TIMESLICE;
-	} else {
+//		p->grre.time_slice = GRR_TIMESLICE;
+//	} else {
 //		printk(KERN_ERR "task_tick_grr: p->grre.time_slice is valid: %d\n", p->grre.time_slice);
-	}
+//	}
 
 	//if (++ddd%300 == 0)
 //	printk(KERN_ERR "task_tick_grr: called!! pid = %d pol = %d, slice = %d\n",

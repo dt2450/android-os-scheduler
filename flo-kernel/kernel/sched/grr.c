@@ -1,6 +1,6 @@
 #include "sched.h"
 #include <linux/smp.h>
-
+#include <linux/interrupt.h>
 /*
  * grr scheduling class.
  *
@@ -8,8 +8,6 @@
 
 atomic_t load_balance_time_slice;
  
-//int ccc = 0;
-//int ddd = 0;
 
 static inline struct task_struct *grr_task_of(struct sched_grr_entity *grr_se)
 {
@@ -297,21 +295,26 @@ static void task_tick_grr(struct rq *rq, struct task_struct *p, int queued)
 	if (p->policy != SCHED_GRR)
 		return;
 
-	if (--p->grre.time_slice) {
-	//	printk(KERN_ERR "[cpu %d]+", smp_processor_id());
-		return;
+	if (!(--p->grre.time_slice)) {
+		//	printk(KERN_ERR "[cpu %d]+", smp_processor_id());
+		p->grre.time_slice = GRR_TIMESLICE;
+
+		if (grr_se->run_list.prev != grr_se->run_list.next) {
+			printk(KERN_ERR "[cpu %d]tick: Requeuing task: %d\n",
+					smp_processor_id(), p->pid);
+			requeue_task_grr(rq, p, 0);
+			set_tsk_need_resched(p);
+		}
+	}
+	
+	atomic_dec(&load_balance_time_slice);
+	
+	if(!atomic_read(&load_balance_time_slice)){
+		atomic_set(&load_balance_time_slice, GRR_LOAD_BALANCE_TIMESLICE);
+		raise_softirq(SCHED_GRR_SOFTIRQ);				
 	}
 //	printk(KERN_ERR "[cpu %d]Done..\n", smp_processor_id());
 
-	p->grre.time_slice = GRR_TIMESLICE;
-
-	if (grr_se->run_list.prev != grr_se->run_list.next) {
-		printk(KERN_ERR "[cpu %d]tick: Requeuing task: %d\n",
-				smp_processor_id(), p->pid);
-		requeue_task_grr(rq, p, 0);
-		set_tsk_need_resched(p);
-		return;
-	}
 }
 
 static void set_curr_task_grr(struct rq *rq)
@@ -359,20 +362,6 @@ static unsigned int get_rr_interval_grr(struct rq *rq, struct task_struct *task)
                 return 0;
 }
 
-/*
- * Trigger the SCHED_SOFTIRQ if it is time to do periodic load balancing.
- */
-void trigger_load_balance(struct rq *rq, int cpu)
-{
-        /* Don't need to rebalance while attached to NULL domain */
-        if (time_after_eq(jiffies, rq->next_balance) &&
-            likely(!on_null_domain(cpu)))
-                raise_softirq(SCHED_SOFTIRQ);
-#ifdef CONFIG_NO_HZ
-        if (nohz_kick_needed(rq, cpu) && likely(!on_null_domain(cpu)))
-                nohz_balancer_kick(cpu);
-#endif
-}
 
 /*
  * run_rebalance_domains is triggered when needed from the scheduler tick.
@@ -384,21 +373,14 @@ static void rebalance(struct softirq_action *h)
         struct rq *this_rq = cpu_rq(this_cpu);
         enum cpu_idle_type idle = this_rq->idle_balance ?
                                                 CPU_IDLE : CPU_NOT_IDLE;
-
-        rebalance_domains(this_cpu, idle)//TODO: change this
-
-        /*
-         * If this cpu has a pending nohz_balance_kick, then do the
-         * balancing on behalf of the other idle cpus whose ticks are
-         * stopped.
-         *
-        nohz_idle_balance(this_cpu, idle);*/
+	printk("rebalance triggered!, cpuid[%d]\n",this_cpu);
+	
 }
 
 __init void init_sched_grr_class(void)
 {
 #ifdef CONFIG_SMP
-	atomic_set(&load_balance_time_slicei,0);
+	atomic_set(&load_balance_time_slice,GRR_LOAD_BALANCE_TIMESLICE);
         open_softirq(SCHED_GRR_SOFTIRQ, rebalance);
 #endif /* SMP */
 

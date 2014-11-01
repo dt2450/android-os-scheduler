@@ -409,7 +409,7 @@ int disable_nonboot_cpus(void)
 	for_each_online_cpu(cpu) {
 		if (cpu == first_cpu)
 			continue;
-		error = 0;//_cpu_down(cpu, 1);
+		error = 1;//_cpu_down(cpu, 1);
 		if (!error)
 			cpumask_set_cpu(cpu, frozen_cpus);
 		else {

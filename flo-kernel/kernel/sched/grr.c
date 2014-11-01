@@ -7,7 +7,8 @@
 
 int ccc = 0;
 int ddd = 0;
-
+atomic_t load_balance_time_slice;
+ 
 static inline struct task_struct *grr_task_of(struct sched_grr_entity *grr_se)
 {
 	return container_of(grr_se, struct task_struct, grre);
@@ -378,6 +379,7 @@ static void rebalance(struct softirq_action *h)
 __init void init_sched_grr_class(void)
 {
 #ifdef CONFIG_SMP
+	atomic_set(&load_balance_time_slicei,0);
         open_softirq(SCHED_GRR_SOFTIRQ, rebalance);
 #endif /* SMP */
 

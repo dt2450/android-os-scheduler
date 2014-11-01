@@ -5,6 +5,43 @@
  *
  */
 
+int ccc = 0;
+int ddd = 0;
+
+static inline struct task_struct *grr_task_of(struct sched_grr_entity *grr_se)
+{
+	return container_of(grr_se, struct task_struct, grre);
+}
+
+void printlist(struct grr_rq *grr_rq)
+{
+	struct list_head *p = NULL;
+	struct task_struct *t = NULL;
+	struct sched_grr_entity *grr_se = NULL;
+	struct grr_rq *temp_grr_rq = NULL;
+	int i = 0;
+	
+	if (grr_rq == NULL) {
+		printk("grr_rq is NULL\n");
+		return;
+	}
+
+	printk("Contents of queue:");
+	list_for_each(p, &grr_rq->queue) {
+		i++;
+		/*
+		temp_grr_rq = list_entry(p, struct grr_rq, queue);
+		printk("temp_grr_rq: %x\n", temp_grr_rq);
+		grr_se = temp_grr_rq->curr;
+		printk("grr_se=%x\n", grr_se);
+		t = grr_task_of(grr_se);
+		printk("t=%x\n", t);
+		printk(" %d", t->pid);
+		*/
+	}
+	printk("Size of queue: %d\n", i);
+}
+
 #ifdef CONFIG_SMP
 //TODO: to be implemented
 static int
@@ -24,10 +61,6 @@ void init_grr_rq(struct grr_rq *grr_rq)
 	raw_spin_lock_init(&grr_rq->grr_runtime_lock);
 }
 
-static inline struct task_struct *grr_task_of(struct sched_grr_entity *grr_se)
-{
-	return container_of(grr_se, struct task_struct, grre);
-}
 
 static inline struct rq *rq_of_grr_rq(struct grr_rq *grr_rq)
 {
@@ -81,7 +114,7 @@ static struct sched_grr_entity *pick_next_grr_entity(struct rq *rq,
 static void check_preempt_curr_grr(struct rq *rq, struct task_struct *p,
 		int flags)
 {
-	printk(KERN_ERR "check_preempt_curr_grr: called!\n");
+	//printk(KERN_ERR "check_preempt_curr_grr: called!\n");
 	//TODO: we don't have priority based scheduling
 	//resched_task(rq->curr);
 }
@@ -92,12 +125,13 @@ static struct task_struct *pick_next_task_grr(struct rq *rq)
 	struct grr_rq *grr_rq = &rq->grr;
 	struct sched_grr_entity *grr_se;
 
-	printk(KERN_ERR "pick_next_task_grr: 1. called!\n");
+	//if (++ccc%1000 == 0)
+	//printk(KERN_ERR "pick_next_task_grr: 1. called!\n");
 
 	if (!grr_rq->grr_nr_running)
 		return NULL;
 
-	printk(KERN_ERR "pick_next_task_grr: 2. called!\n");
+	//printk(KERN_ERR "pick_next_task_grr: 2. called!\n");
 	grr_se = pick_next_grr_entity(rq, grr_rq);
 	BUG_ON(!grr_se);
 
@@ -115,6 +149,7 @@ enqueue_task_grr(struct rq *rq, struct task_struct *p, int flags)
 	struct grr_rq *grr_rq = grr_rq_of_se(grr_se);
 
 	printk(KERN_ERR "enqueue_task_grr: called!!\n");
+	printlist(grr_rq);
 
 	if (flags & ENQUEUE_WAKEUP)
 		grr_se->timeout = 0;
@@ -130,6 +165,7 @@ enqueue_task_grr(struct rq *rq, struct task_struct *p, int flags)
 
 	grr_rq->grr_nr_running++;
 	inc_nr_running(rq);
+	printlist(grr_rq);
 }
 
 static void __dequeue_entity(struct sched_grr_entity *grr_se)
@@ -162,18 +198,22 @@ dequeue_task_grr(struct rq *rq, struct task_struct *p, int flags)
 	struct grr_rq *grr_rq = grr_rq_of_se(grr_se);
 
 	printk(KERN_ERR "dequeue_task_grr: called!!\n");
-	if ((grr_rq && grr_rq->grr_nr_running) && (grr_se != grr_rq->curr)) {
+	printlist(grr_rq);
+	printk("dequeue_task_grr: grr_rq:%x, grr_rq->grr_nr_running:%d, grr_se:%x, grr_rq->curr:%x\n", grr_rq, grr_rq->grr_nr_running, grr_se, grr_rq->curr);
+	//if ((grr_rq && grr_rq->grr_nr_running) && (grr_se != grr_rq->curr)) {
+	if (grr_rq && grr_rq->grr_nr_running) {
 		__dequeue_entity(grr_se);
 		//TODO: To verify
 		grr_rq->grr_nr_running--;
 		dec_nr_running(rq);
 	}
 	grr_se->on_rq = 0;
+	printlist(grr_rq);
 }
 
 static void yield_task_grr(struct rq *rq)
 {
-	printk(KERN_ERR "yield_task_grr: called!!\n");
+	//printk(KERN_ERR "yield_task_grr: called!!\n");
 }
 
 static void put_prev_entity(struct grr_rq *grr_rq,
@@ -191,7 +231,7 @@ static void put_prev_task_grr(struct rq *rq, struct task_struct *prev)
 	struct sched_grr_entity *grr_se = &prev->grre;
 	struct grr_rq *grr_rq = grr_rq_of(grr_se);
 
-	printk(KERN_ERR "put_prev_task_grr: called!!\n");
+	//printk(KERN_ERR "put_prev_task_grr: called!!\n");
 
 	put_prev_entity(grr_rq, grr_se);
 }
@@ -225,19 +265,28 @@ static void requeue_task_grr(struct rq *rq, struct task_struct *p, int head)
 static void task_tick_grr(struct rq *rq, struct task_struct *p, int queued)
 {
 	struct sched_grr_entity *grr_se = &p->grre;
+	if (p->grre.time_slice < 0) {
+//		printk(KERN_ERR "task_tick_grr: p->grre.time_slice is garbage: %d, resetting to %d\n", p->grre.time_slice, GRR_TIMESLICE);
+		p->grre.time_slice = GRR_TIMESLICE;
+	} else {
+//		printk(KERN_ERR "task_tick_grr: p->grre.time_slice is valid: %d\n", p->grre.time_slice);
+	}
 
-	printk(KERN_ERR "task_tick_grr: called!! pid = %d pol = %d ",
-			p->pid, p->policy);
+	//if (++ddd%300 == 0)
+//	printk(KERN_ERR "task_tick_grr: called!! pid = %d pol = %d, slice = %d\n",
+//			p->pid, p->policy, p->grre.time_slice);
 
-	printk(KERN_ERR "slice = %d\n", p->grre.time_slice);
+//	if (p->grre.time_slice == 1)
+//		printk(KERN_ERR "\n\n\n\n\n\n\ntask_tick_grr: BECAME ONE, NEXT TIME ZERO\n\n\n\n\n\n\n");
+
 	if (p->policy != SCHED_GRR)
 		return;
 
 	if (--p->grre.time_slice) {
-		printk(KERN_ERR "+");
+	//	printk(KERN_ERR "+");
 		return;
 	}
-	printk(KERN_ERR "Done..\n");
+//	printk(KERN_ERR "Done..\n");
 
 	p->grre.time_slice = GRR_TIMESLICE;
 
@@ -259,6 +308,7 @@ static void set_curr_task_grr(struct rq *rq)
 	printk(KERN_ERR "set_curr_task_grr: called!!\n");
 	p->grre.exec_start = rq->clock_task;
 	grr_rq->curr = grr_se;
+	printk("set_curr_task_grr: grr_rq: %x, grr_rq->curr: %x, rq->curr: %x\n", grr_rq, grr_rq->curr, rq->curr);
 }
 
 static void switched_to_grr(struct rq *rq, struct task_struct *p)
@@ -283,7 +333,10 @@ prio_changed_grr(struct rq *rq, struct task_struct *p, int oldprio)
 static unsigned int get_rr_interval_grr(struct rq *rq, struct task_struct *task)
 {
 	printk(KERN_ERR "get_rr_interval_grr: called!!\n");
-	return 0;
+	if (task->policy == SCHED_GRR)
+                return GRR_TIMESLICE;
+        else
+                return 0;
 }
 
 /*

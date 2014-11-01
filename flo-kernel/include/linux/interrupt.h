@@ -434,7 +434,8 @@ enum
 	HRTIMER_SOFTIRQ,
 	RCU_SOFTIRQ,    /* Preferable RCU should always be the last softirq */
 
-	NR_SOFTIRQS
+	NR_SOFTIRQS,
+	SCHED_GRR_SOFTIRQ
 };
 
 /* map softirq index to softirq name. update 'softirq_to_name' in

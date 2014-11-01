@@ -287,6 +287,44 @@ static unsigned int get_rr_interval_grr(struct rq *rq, struct task_struct *task)
 }
 
 /*
+ * Trigger the SCHED_SOFTIRQ if it is time to do periodic load balancing.
+ */
+void trigger_load_balance(struct rq *rq, int cpu)
+{
+        /* Don't need to rebalance while attached to NULL domain */
+        if (time_after_eq(jiffies, rq->next_balance) &&
+            likely(!on_null_domain(cpu)))
+                raise_softirq(SCHED_SOFTIRQ);
+#ifdef CONFIG_NO_HZ
+        if (nohz_kick_needed(rq, cpu) && likely(!on_null_domain(cpu)))
+                nohz_balancer_kick(cpu);
+#endif
+}
+
+/*
+ * run_rebalance_domains is triggered when needed from the scheduler tick.
+ * Also triggered for nohz idle balancing (with nohz_balancing_kick set).
+ */
+static void run_rebalance_domains(struct softirq_action *h)
+{
+        int this_cpu = smp_processor_id();
+        struct rq *this_rq = cpu_rq(this_cpu);
+        enum cpu_idle_type idle = this_rq->idle_balance ?
+                                                CPU_IDLE : CPU_NOT_IDLE;
+
+        rebalance_domains(this_cpu, idle);
+
+        /*
+         * If this cpu has a pending nohz_balance_kick, then do the
+         * balancing on behalf of the other idle cpus whose ticks are
+         * stopped.
+         */
+        nohz_idle_balance(this_cpu, idle);
+}
+
+
+
+/*
  * Simple, special scheduling class for the per-CPU idle tasks:
  */
 const struct sched_class grr_sched_class = {

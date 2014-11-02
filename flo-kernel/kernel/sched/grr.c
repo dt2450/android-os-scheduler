@@ -178,8 +178,8 @@ enqueue_task_grr(struct rq *rq, struct task_struct *p, int flags)
 
 	//printk(KERN_ERR "[cpu %d]enqueue_task_grr: called!!\n",
 	//		smp_processor_id());
-	//trace_printk("Task group is %s for pid %d\n",
-	//		task_group_path(task_group(p)), p->pid);
+	trace_printk("Task group is %s for pid %d\n",
+			task_group_path(task_group(p)), p->pid);
 
 	printlist(grr_rq);
 

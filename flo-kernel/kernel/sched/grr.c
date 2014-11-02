@@ -6,7 +6,7 @@
  *
  */
 
-atomic_t load_balance_time_slice;
+static atomic_t load_balance_time_slice;
  
 
 static inline struct task_struct *grr_task_of(struct sched_grr_entity *grr_se)
@@ -307,6 +307,7 @@ static void task_tick_grr(struct rq *rq, struct task_struct *p, int queued)
 		}
 	}
 	
+	#ifdef CONFIG_SMP
 	atomic_dec(&load_balance_time_slice);
 	
 	if(!atomic_read(&load_balance_time_slice)){
@@ -314,6 +315,7 @@ static void task_tick_grr(struct rq *rq, struct task_struct *p, int queued)
 		raise_softirq(SCHED_GRR_SOFTIRQ);				
 	}
 //	printk(KERN_ERR "[cpu %d]Done..\n", smp_processor_id());
+	#endif /* SMP */
 
 }
 
@@ -364,17 +366,52 @@ static unsigned int get_rr_interval_grr(struct rq *rq, struct task_struct *task)
 
 
 /*
- * run_rebalance_domains is triggered when needed from the scheduler tick.
- * Also triggered for nohz idle balancing (with nohz_balancing_kick set).
+ * This function will rebalance the various queues as per the policy 
+ * Periodic load balancing should be implemented such that a single job
+ * from the run queue with the highest total number of tasks should be 
+ * moved to the run queue with the lowest total number of tasks. The job
+ * that should be moved is the first eligible job in the run queue which
+ *  can be moved without causing the imbalance to reverse. Jobs that are
+ *  currently running are not eligible to be moved and some jobs may have
+ * restrictions on which CPU they can be run on. Load balancing should be
+ * attempted every 500ms for each CPU.
  */
 static void rebalance(struct softirq_action *h)
 {
+	/*int i;
+	unsigned long max_proc_on_run_q,min_proc_on_run_q;
+	struct grr_rq *heavily_loaded_grr_rq, *lightly_loaded_grr_rq;
+	struct rq *heavily_loaded_rq, *lightly_loaded_rq;
         int this_cpu = smp_processor_id();
-        struct rq *this_rq = cpu_rq(this_cpu);
-        enum cpu_idle_type idle = this_rq->idle_balance ?
-                                                CPU_IDLE : CPU_NOT_IDLE;
+	heavily_loaded_rq = lightly_loaded_rq =  NULL;
+	heavily_loaded_grr_rq = lightly_loaded_grr_rq = NULL;
 	printk("rebalance triggered!, cpuid[%d]\n",this_cpu);
-	
+	printk("no of cpus: [%d]\n",nr_cpu_ids);
+	max_proc_on_run_q = 0;
+	min_proc_on_run_q = ULONG_MAX;
+	rcu_read_lock();
+	for_each_possible_cpu(i){
+
+        	struct rq *this_rq = cpu_rq(i);
+		struct grr_rq *grr_rq = &this_rq->grr;
+		if (max_proc_on_run_q < grr_rq->grr_nr_running) {
+			max_proc_on_run_q = grr_rq->grr_nr_running;
+			heavily_loaded_grr_rq = grr_rq;
+			heavily_loaded_rq = this_rq;
+		}
+		if (grr_rq->grr_nr_running < min_proc_on_run_q) {
+			min_proc_on_run_q = grr_rq->grr_nr_running;
+			lightly_loaded_grr_rq = grr_rq;
+			lightly_loaded_rq = this_rq;
+		}
+	}
+	rcu_read_unlock();*/
+	/*condition for rebalance go ahead*/
+/*	if ((min_proc_on_run_q+1) != max_proc_on_run_q){
+		double_rq_lock(lightly_loaded_rq, heavily_loaded_rq);
+			
+		double_rq_unlock(lightly_loaded_rq, heavily_loaded_rq);
+	}*/
 }
 
 __init void init_sched_grr_class(void)

@@ -7,7 +7,21 @@
  */
 
 atomic_t load_balance_time_slice;
- 
+
+static char group_path[PATH_MAX];
+
+static char *task_group_path(struct task_group *tg)
+{
+	/*
+	 * May be NULL if the underlying cgroup isn't fully-created yet
+	 */
+	if (!tg->css.cgroup) {
+		group_path[0] = '\0';
+		return group_path;
+	}
+	cgroup_path(tg->css.cgroup, group_path, PATH_MAX);
+	return group_path;
+}
 
 static inline struct task_struct *grr_task_of(struct sched_grr_entity *grr_se)
 {
@@ -155,6 +169,9 @@ enqueue_task_grr(struct rq *rq, struct task_struct *p, int flags)
 
 	printk(KERN_ERR "[cpu %d]enqueue_task_grr: called!!\n",
 			smp_processor_id());
+	trace_printk("Task group is %s for pid %d",
+			task_group_path(task_group(p)), p->pid);
+
 	printlist(grr_rq);
 
 	if (flags & ENQUEUE_WAKEUP)

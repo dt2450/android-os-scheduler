@@ -1971,11 +1971,14 @@ static void watchdog(struct rq *rq, struct task_struct *p)
 	soft = task_rlimit(p, RLIMIT_RTTIME);
 	hard = task_rlimit_max(p, RLIMIT_RTTIME);
 
+	printk("watchdog: came here\n");
 	if (soft != RLIM_INFINITY) {
 		unsigned long next;
 
+		printk("watchdog: maybe triggered\n");
 		p->rt.timeout++;
 		next = DIV_ROUND_UP(min(soft, hard), USEC_PER_SEC/HZ);
+
 		if (p->rt.timeout > next)
 			p->cputime_expires.sched_exp = p->se.sum_exec_runtime;
 	}

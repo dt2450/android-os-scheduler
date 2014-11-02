@@ -85,13 +85,14 @@ select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 
 	tg_str = get_tg_str(p);
 	len = strlen(tg_str);
-	if (len <= 5) {
+	/*if (len <= 5) {
 		trace_printk("select_task_rq_grr: FG task: %s : %d\n", tg_str, p->pid);
 		return 1;
 	} else {
 		trace_printk("select_task_rq_grr: BG task: %s : %d\n", tg_str, p->pid);
 		return 2;
-	}
+	}*/
+	return 1;	
 }
 
 #endif /* CONFIG_SMP */
@@ -102,6 +103,7 @@ void init_grr_rq(struct grr_rq *grr_rq)
 	grr_rq->grr_time = 0;
 	grr_rq->grr_throttled = 0;
 	grr_rq->grr_runtime = 0;
+	grr_rq->grr_nr_running = 0;
 	raw_spin_lock_init(&grr_rq->grr_runtime_lock);
 }
 
@@ -358,12 +360,12 @@ static void task_tick_grr(struct rq *rq, struct task_struct *p, int queued)
 	}
 	
 	#ifdef CONFIG_SMP
-	/*atomic_dec(&load_balance_time_slice);
+	atomic_dec(&load_balance_time_slice);
 	
 	if(!atomic_read(&load_balance_time_slice)){
 		atomic_set(&load_balance_time_slice, GRR_LOAD_BALANCE_TIMESLICE);
 		raise_softirq(SCHED_GRR_SOFTIRQ);				
-	}*/
+	}
 //	printk(KERN_ERR "[cpu %d]Done..\n", smp_processor_id());
 	#endif /* SMP */
 
@@ -428,18 +430,15 @@ static unsigned int get_rr_interval_grr(struct rq *rq, struct task_struct *task)
  */
 static void rebalance(struct softirq_action *h)
 {
-	int i;
+	int i,heavy_cpu,light_cpu;
 	unsigned long max_proc_on_run_q,min_proc_on_run_q;
 	struct grr_rq *heavily_loaded_grr_rq, *lightly_loaded_grr_rq;
 	struct rq *heavily_loaded_rq, *lightly_loaded_rq;
 	struct sched_grr_entity *grr_se;
 	struct task_struct *p;
-        int this_cpu = smp_processor_id();
-
+	unsigned long flags;
 	heavily_loaded_rq = lightly_loaded_rq =  NULL;
 	heavily_loaded_grr_rq = lightly_loaded_grr_rq = NULL;
-	printk("rebalance triggered!, cpuid[%d]\n",this_cpu);
-	printk("no of cpus: [%d]\n",nr_cpu_ids);
 	max_proc_on_run_q = 0;
 	min_proc_on_run_q = ULONG_MAX;
 	rcu_read_lock();
@@ -451,17 +450,21 @@ static void rebalance(struct softirq_action *h)
 			max_proc_on_run_q = grr_rq->grr_nr_running;
 			heavily_loaded_grr_rq = grr_rq;
 			heavily_loaded_rq = this_rq;
+			heavy_cpu = i;
 		}
 		if (grr_rq->grr_nr_running < min_proc_on_run_q) {
 			min_proc_on_run_q = grr_rq->grr_nr_running;
 			lightly_loaded_grr_rq = grr_rq;
 			lightly_loaded_rq = this_rq;
+			light_cpu = i;
 		}
 	}
 	rcu_read_unlock();
 	/*condition for rebalance go ahead*/
+	printk("[GRR_LOADBALANCER]In the rebalance method\n[GRR_LOADBALANCER] min_proc_on_run_q:[%d] max_proc_on_run_q[%d]\n", min_proc_on_run_q, max_proc_on_run_q);
 	if ((min_proc_on_run_q+1) != max_proc_on_run_q){
 		/*lock both run queues*/
+		local_irq_save(flags);
 		double_rq_lock(lightly_loaded_rq, heavily_loaded_rq);
 		if(heavily_loaded_grr_rq->curr == NULL){
 			//directly pick the task from the head of the rq
@@ -469,7 +472,6 @@ static void rebalance(struct softirq_action *h)
 			grr_se = pick_next_grr_entity(heavily_loaded_rq,
 					heavily_loaded_grr_rq);
 			p = grr_task_of(grr_se);
-			enqueue_task_grr(lightly_loaded_rq, p, 0);
 		}else{
 			//pick the task which is the next task after
 			//grr_rq->curr
@@ -478,10 +480,11 @@ static void rebalance(struct softirq_action *h)
 					struct sched_grr_entity,
 					run_list);
 			p = grr_task_of(grr_se);
-			enqueue_task_grr(lightly_loaded_rq, p, 0);
 		}
+		enqueue_task_grr(lightly_loaded_rq, p, 0);
 		/*unlock both run queues*/
 		double_rq_unlock(lightly_loaded_rq, heavily_loaded_rq);
+		local_irq_restore(flags);
 	}
 }
 
@@ -491,8 +494,8 @@ __init void init_sched_grr_class(void)
 	fg_cpu_mask = 0x3;
 	bg_cpu_mask = 0xC;
 
-	//atomic_set(&load_balance_time_slice,GRR_LOAD_BALANCE_TIMESLICE);
-        //open_softirq(SCHED_GRR_SOFTIRQ, rebalance);
+	atomic_set(&load_balance_time_slice,GRR_LOAD_BALANCE_TIMESLICE);
+        open_softirq(SCHED_GRR_SOFTIRQ, rebalance);
 #endif /* SMP */
 
 }

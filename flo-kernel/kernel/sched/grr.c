@@ -121,7 +121,12 @@ static void check_preempt_curr_grr(struct rq *rq, struct task_struct *p,
 	//TODO: we don't have priority based scheduling
 	//resched_task(rq->curr);
 }
-
+/*This function will pick the task of the head of the queue
+and make this start running this task
+NOTE: put_prev_task is always called before this function- since
+put prev task will pick the running task and put it at the end of the queue
+we are gauranteed to have a non-running task at the begining of the queue.
+*/
 static struct task_struct *pick_next_task_grr(struct rq *rq)
 {
 	struct task_struct *p;
@@ -378,11 +383,14 @@ static unsigned int get_rr_interval_grr(struct rq *rq, struct task_struct *task)
  */
 static void rebalance(struct softirq_action *h)
 {
-	/*int i;
+	int i;
 	unsigned long max_proc_on_run_q,min_proc_on_run_q;
 	struct grr_rq *heavily_loaded_grr_rq, *lightly_loaded_grr_rq;
 	struct rq *heavily_loaded_rq, *lightly_loaded_rq;
+	struct sched_grr_entity *grr_se;
+	struct task_struct *p;
         int this_cpu = smp_processor_id();
+
 	heavily_loaded_rq = lightly_loaded_rq =  NULL;
 	heavily_loaded_grr_rq = lightly_loaded_grr_rq = NULL;
 	printk("rebalance triggered!, cpuid[%d]\n",this_cpu);
@@ -405,13 +413,31 @@ static void rebalance(struct softirq_action *h)
 			lightly_loaded_rq = this_rq;
 		}
 	}
-	rcu_read_unlock();*/
+	rcu_read_unlock();
 	/*condition for rebalance go ahead*/
-/*	if ((min_proc_on_run_q+1) != max_proc_on_run_q){
+	if ((min_proc_on_run_q+1) != max_proc_on_run_q){
+		/*lock both run queues*/
 		double_rq_lock(lightly_loaded_rq, heavily_loaded_rq);
-			
+		if(heavily_loaded_grr_rq->curr == NULL){
+			//directly pick the task from the head of the rq
+			//beacuse no task is currently running
+			grr_se = pick_next_grr_entity(heavily_loaded_rq,
+					heavily_loaded_grr_rq);
+			p = grr_task_of(grr_se);
+			enqueue_task_grr(lightly_loaded_rq, p, 0);
+		}else{
+			//pick the task which is the next task after
+			//grr_rq->curr
+			struct list_head *queue = &heavily_loaded_grr_rq->queue;
+			grr_se = list_entry(queue->next->next,
+					struct sched_grr_entity,
+					run_list);
+			p = grr_task_of(grr_se);
+			enqueue_task_grr(lightly_loaded_rq, p, 0);
+		}
+		/*unlock both run queues*/
 		double_rq_unlock(lightly_loaded_rq, heavily_loaded_rq);
-	}*/
+	}
 }
 
 __init void init_sched_grr_class(void)

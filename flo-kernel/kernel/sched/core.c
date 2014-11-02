@@ -7145,6 +7145,7 @@ void __init sched_init(void)
 		zalloc_cpumask_var(&cpu_isolated_map, GFP_NOWAIT);
 #endif
 	init_sched_fair_class();
+	init_sched_grr_class();
 
 	scheduler_running = 1;
 }

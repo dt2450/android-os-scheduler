@@ -1785,8 +1785,12 @@ void sched_fork(struct task_struct *p)
 		p->sched_reset_on_fork = 0;
 	}
 
-	if (!rt_prio(p->prio))
-		p->sched_class = &fair_sched_class;
+	if (!rt_prio(p->prio)) {
+		//for debugging
+		//trace_printk("sched_fork: Came here Take care\n");
+		//p->sched_class = &fair_sched_class;
+		p->sched_class = &grr_sched_class;
+	}
 
 	if (p->sched_class->task_fork)
 		p->sched_class->task_fork(p);
@@ -4100,13 +4104,10 @@ static int __sched_setscheduler(struct task_struct *p, int policy,
 	int reset_on_fork;
 
 	/* may grab non-irq protected spin_locks */
-	pr_err("Came here 1\n");
 	BUG_ON(in_interrupt());
-	pr_err("Came here 1.1\n");
 recheck:
 	/* double check policy once rq lock held */
 	if (policy < 0) {
-		pr_err("Came here 2\n");
 		reset_on_fork = p->sched_reset_on_fork;
 		policy = oldpolicy = p->policy;
 	} else {
@@ -4116,12 +4117,10 @@ recheck:
 		if (policy != SCHED_FIFO && policy != SCHED_RR &&
 				policy != SCHED_NORMAL && policy != SCHED_BATCH &&
 				policy != SCHED_IDLE && policy != SCHED_GRR) {
-			pr_err("Came here 3\n");
 			return -EINVAL;
 		}
 	}
 
-	pr_err("Came here 4\n");
 	/*
 	 * Valid priorities for SCHED_FIFO and SCHED_RR are
 	 * 1..MAX_USER_RT_PRIO-1, valid priority for SCHED_NORMAL,
@@ -4130,19 +4129,16 @@ recheck:
 	if (param->sched_priority < 0 ||
 	    (p->mm && param->sched_priority > MAX_USER_RT_PRIO-1) ||
 	    (!p->mm && param->sched_priority > MAX_RT_PRIO-1)) {
-		pr_err("Came here 5\n");
 		return -EINVAL;
 	}
 	if (rt_policy(policy) != (param->sched_priority != 0)) {
 
-		pr_err("Came here 6\n");
 		return -EINVAL;
 	}
 
 	/*
 	 * Allow unprivileged RT tasks to decrease priority:
 	 */
-	pr_err("Came here 7\n");
 	if (user && !capable(CAP_SYS_NICE)) {
 		if (rt_policy(policy)) {
 			unsigned long rlim_rtprio =
@@ -4178,7 +4174,6 @@ recheck:
 
 	if (user) {
 		retval = security_task_setscheduler(p);
-		pr_err("Came here 8\n");
 		if (retval)
 			return retval;
 	}
@@ -4197,10 +4192,8 @@ recheck:
 	 */
 	if (p == rq->stop) {
 		task_rq_unlock(rq, p, &flags);
-		pr_err("Came here 9\n");
 		return -EINVAL;
 	}
-	pr_err("Came here 10\n");
 
 	/*
 	 * If not changing anything there's no need to proceed further:
@@ -7152,6 +7145,7 @@ void __init sched_init(void)
 		zalloc_cpumask_var(&cpu_isolated_map, GFP_NOWAIT);
 #endif
 	init_sched_fair_class();
+	init_sched_grr_class();
 
 	scheduler_running = 1;
 }

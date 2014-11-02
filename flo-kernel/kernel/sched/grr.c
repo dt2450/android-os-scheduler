@@ -1,5 +1,6 @@
 #include "sched.h"
 #include <linux/smp.h>
+#include <linux/limits.h>
 #include <linux/interrupt.h>
 /*
  * grr scheduling class.
@@ -7,7 +8,29 @@
  */
 
 static atomic_t load_balance_time_slice;
- 
+
+static char group_path[PATH_MAX];
+
+static int fg_cpu_mask = 0;
+static int bg_cpu_mask = 0;
+
+static char *task_group_path(struct task_group *tg)
+{
+	/*
+	 * May be NULL if the underlying cgroup isn't fully-created yet
+	 */
+	if (!tg->css.cgroup) {
+		group_path[0] = '\0';
+		return group_path;
+	}
+	cgroup_path(tg->css.cgroup, group_path, PATH_MAX);
+	return group_path;
+}
+
+static char *get_tg_str(struct task_struct *p)
+{
+	return task_group_path(task_group(p));
+}
 
 static inline struct task_struct *grr_task_of(struct sched_grr_entity *grr_se)
 {
@@ -27,7 +50,7 @@ void printlist(struct grr_rq *grr_rq)
 		return;
 	}
 
-	printk("Contents of queue: ");
+	//printk("Contents of queue: ");
 	list_for_each(p, &grr_rq->queue) {
 		i++;
 		/*
@@ -40,7 +63,14 @@ void printlist(struct grr_rq *grr_rq)
 		printk(" %d", t->pid);
 		*/
 	}
-	printk("[cpu %d]Size of queue: %d\n", smp_processor_id(), i);
+	//printk("[cpu %d]Size of queue: %d\n", smp_processor_id(), i);
+}
+
+static void task_move_group_grr(struct task_struct *p, int on_rq)
+{
+	trace_printk("task_move_group_grr: Task group is %s for pid %d\n",
+			task_group_path(task_group(p)), p->pid);
+
 }
 
 #ifdef CONFIG_SMP
@@ -48,10 +78,22 @@ void printlist(struct grr_rq *grr_rq)
 static int
 select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 {
-	printk(KERN_ERR "[cpu %d]select_task_rq_grr: called!\n",
-			smp_processor_id());
-	return task_cpu(p); /* IDLE tasks as never migrated */
+	char *tg_str = NULL;
+	int len = 0;
+	//printk(KERN_ERR "[cpu %d]select_task_rq_grr: called!\n",
+	//		smp_processor_id());
+
+	tg_str = get_tg_str(p);
+	len = strlen(tg_str);
+	if (len <= 5) {
+		trace_printk("select_task_rq_grr: FG task: %s : %d\n", tg_str, p->pid);
+		return 1;
+	} else {
+		trace_printk("select_task_rq_grr: BG task: %s : %d\n", tg_str, p->pid);
+		return 2;
+	}
 }
+
 #endif /* CONFIG_SMP */
 
 void init_grr_rq(struct grr_rq *grr_rq)
@@ -158,8 +200,11 @@ enqueue_task_grr(struct rq *rq, struct task_struct *p, int flags)
 	struct sched_grr_entity *grr_se = &p->grre;
 	struct grr_rq *grr_rq = grr_rq_of_se(grr_se);
 
-	printk(KERN_ERR "[cpu %d]enqueue_task_grr: called!!\n",
-			smp_processor_id());
+	//printk(KERN_ERR "[cpu %d]enqueue_task_grr: called!!\n",
+	//		smp_processor_id());
+	//trace_printk("Task group is %s for pid %d\n",
+	//		task_group_path(task_group(p)), p->pid);
+
 	printlist(grr_rq);
 
 	if (flags & ENQUEUE_WAKEUP)
@@ -181,8 +226,8 @@ enqueue_task_grr(struct rq *rq, struct task_struct *p, int flags)
 
 static void __dequeue_entity(struct sched_grr_entity *grr_se)
 {
-	printk(KERN_ERR "[cpu %d]__dequeue_entity: Deleting from list\n",
-			smp_processor_id());
+	//printk(KERN_ERR "[cpu %d]__dequeue_entity: Deleting from list\n",
+	//		smp_processor_id());
 	list_del(&grr_se->run_list);
 }
 
@@ -209,10 +254,10 @@ dequeue_task_grr(struct rq *rq, struct task_struct *p, int flags)
 	struct sched_grr_entity *grr_se = &p->grre;
 	struct grr_rq *grr_rq = grr_rq_of_se(grr_se);
 
-	printk(KERN_ERR "[cpu %d]dequeue_task_grr: called!!\n",
-			smp_processor_id());
+	//printk(KERN_ERR "[cpu %d]dequeue_task_grr: called!!\n",
+	//		smp_processor_id());
 	printlist(grr_rq);
-	printk("dequeue_task_grr: grr_rq:%x, grr_rq->grr_nr_running:%d, grr_se:%x, grr_rq->curr:%x\n", smp_processor_id(), grr_rq, grr_rq->grr_nr_running, grr_se, grr_rq->curr);
+	//printk("dequeue_task_grr: grr_rq:%x, grr_rq->grr_nr_running:%d, grr_se:%x, grr_rq->curr:%x\n", smp_processor_id(), grr_rq, grr_rq->grr_nr_running, grr_se, grr_rq->curr);
 	//if ((grr_rq && grr_rq->grr_nr_running) && (grr_se != grr_rq->curr)) {
 	if (grr_rq && grr_rq->grr_nr_running) {
 		__dequeue_entity(grr_se);
@@ -274,8 +319,8 @@ static void requeue_task_grr(struct rq *rq, struct task_struct *p, int head)
 	struct sched_grr_entity *grr_se = &p->grre;
 	struct grr_rq *grr_rq = grr_rq_of_se(grr_se);
 
-	printk(KERN_ERR "[cpu %d]requeue_task_grr: Requeuing pid %d\n",
-			smp_processor_id(), p->pid);
+	//printk(KERN_ERR "[cpu %d]requeue_task_grr: Requeuing pid %d\n",
+	//		smp_processor_id(), p->pid);
 
 	requeue_grr_entity(grr_rq, grr_se, head);
 }
@@ -305,20 +350,20 @@ static void task_tick_grr(struct rq *rq, struct task_struct *p, int queued)
 		p->grre.time_slice = GRR_TIMESLICE;
 
 		if (grr_se->run_list.prev != grr_se->run_list.next) {
-			printk(KERN_ERR "[cpu %d]tick: Requeuing task: %d\n",
-					smp_processor_id(), p->pid);
+			//printk(KERN_ERR "[cpu %d]tick: Requeuing task: %d\n",
+			//		smp_processor_id(), p->pid);
 			requeue_task_grr(rq, p, 0);
 			set_tsk_need_resched(p);
 		}
 	}
 	
 	#ifdef CONFIG_SMP
-	atomic_dec(&load_balance_time_slice);
+	/*atomic_dec(&load_balance_time_slice);
 	
 	if(!atomic_read(&load_balance_time_slice)){
 		atomic_set(&load_balance_time_slice, GRR_LOAD_BALANCE_TIMESLICE);
 		raise_softirq(SCHED_GRR_SOFTIRQ);				
-	}
+	}*/
 //	printk(KERN_ERR "[cpu %d]Done..\n", smp_processor_id());
 	#endif /* SMP */
 
@@ -331,17 +376,17 @@ static void set_curr_task_grr(struct rq *rq)
 	struct grr_rq *grr_rq = grr_rq_of(grr_se);
 	//TODO: Try using rq->curr
 
-	printk(KERN_ERR "[cpu %d]set_curr_task_grr: called!!\n",
-			smp_processor_id());
+	//printk(KERN_ERR "[cpu %d]set_curr_task_grr: called!!\n",
+	//		smp_processor_id());
 	p->grre.exec_start = rq->clock_task;
 	grr_rq->curr = grr_se;
-	printk("[cpu %d]set_curr_task_grr: grr_rq: %x, grr_rq->curr: %x, rq->curr: %x\n", smp_processor_id(), grr_rq, grr_rq->curr, rq->curr);
+	//printk("[cpu %d]set_curr_task_grr: grr_rq: %x, grr_rq->curr: %x, rq->curr: %x\n", smp_processor_id(), grr_rq, grr_rq->curr, rq->curr);
 }
 
 static void switched_to_grr(struct rq *rq, struct task_struct *p)
 {
-	printk(KERN_ERR "[cpu %d]switched_to_grr: called!!\n",
-			smp_processor_id());
+	//printk(KERN_ERR "[cpu %d]switched_to_grr: called!!\n",
+	//		smp_processor_id());
 	if (!p->grre.on_rq)
 		return;
 
@@ -354,15 +399,15 @@ static void switched_to_grr(struct rq *rq, struct task_struct *p)
 static void
 prio_changed_grr(struct rq *rq, struct task_struct *p, int oldprio)
 {
-	printk(KERN_ERR "[cpu %d]prio_changed_grr: called!!\n",
-			smp_processor_id());
+	//printk(KERN_ERR "[cpu %d]prio_changed_grr: called!!\n",
+	//		smp_processor_id());
 }
 
 //TODO: Do we have to implement this?
 static unsigned int get_rr_interval_grr(struct rq *rq, struct task_struct *task)
 {
-	printk(KERN_ERR "[cpu %d]get_rr_interval_grr: called!!\n",
-			smp_processor_id());
+	//printk(KERN_ERR "[cpu %d]get_rr_interval_grr: called!!\n",
+	//		smp_processor_id());
 	if (task->policy == SCHED_GRR)
                 return GRR_TIMESLICE;
         else
@@ -443,8 +488,11 @@ static void rebalance(struct softirq_action *h)
 __init void init_sched_grr_class(void)
 {
 #ifdef CONFIG_SMP
-	atomic_set(&load_balance_time_slice,GRR_LOAD_BALANCE_TIMESLICE);
-        open_softirq(SCHED_GRR_SOFTIRQ, rebalance);
+	fg_cpu_mask = 0x3;
+	bg_cpu_mask = 0xC;
+
+	//atomic_set(&load_balance_time_slice,GRR_LOAD_BALANCE_TIMESLICE);
+        //open_softirq(SCHED_GRR_SOFTIRQ, rebalance);
 #endif /* SMP */
 
 }
@@ -455,7 +503,8 @@ __init void init_sched_grr_class(void)
  */
 const struct sched_class grr_sched_class = {
 	//TODO: Move at correct location
-	.next			= &idle_sched_class,
+	.next			= &fair_sched_class,
+	//.next			= &idle_sched_class,
 	.enqueue_task		= enqueue_task_grr,
 	.dequeue_task		= dequeue_task_grr,
 	.yield_task             = yield_task_grr,
@@ -465,6 +514,7 @@ const struct sched_class grr_sched_class = {
 	.pick_next_task		= pick_next_task_grr,
 	.put_prev_task		= put_prev_task_grr,
 
+	.task_move_group	= task_move_group_grr,
 #ifdef CONFIG_SMP
 	.select_task_rq		= select_task_rq_grr,
 /*

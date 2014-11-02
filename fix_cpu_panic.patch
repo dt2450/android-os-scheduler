@@ -1,0 +1,26 @@
+From 35dd7301066c0b4615394d0ba98480f2f48b9667 Mon Sep 17 00:00:00 2001
+From: Jintack Lim <jintack@cs.columbia.edu>
+Date: Fri, 31 Oct 2014 19:33:02 -0400
+Subject: [PATCH] cpu panic fix when the device is disconnected and waking
+ from a deep sleep
+
+---
+ flo-kernel/kernel/cpu.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/flo-kernel/kernel/cpu.c b/flo-kernel/kernel/cpu.c
+index 4f9701b..a64efa2 100644
+--- a/flo-kernel/kernel/cpu.c
++++ b/flo-kernel/kernel/cpu.c
+@@ -409,7 +409,7 @@ int disable_nonboot_cpus(void)
+ 	for_each_online_cpu(cpu) {
+ 		if (cpu == first_cpu)
+ 			continue;
+-		error = 0;//_cpu_down(cpu, 1);
++		error = 1;//_cpu_down(cpu, 1);
+ 		if (!error)
+ 			cpumask_set_cpu(cpu, frozen_cpus);
+ 		else {
+-- 
+1.7.10.4
+

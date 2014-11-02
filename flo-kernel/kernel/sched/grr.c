@@ -11,6 +11,9 @@ static atomic_t load_balance_time_slice;
 
 static char group_path[PATH_MAX];
 
+static int fg_cpu_mask = 0;
+static int bg_cpu_mask = 0;
+
 static char *task_group_path(struct task_group *tg)
 {
 	/*
@@ -22,6 +25,11 @@ static char *task_group_path(struct task_group *tg)
 	}
 	cgroup_path(tg->css.cgroup, group_path, PATH_MAX);
 	return group_path;
+}
+
+static char *get_tg_str(struct task_struct *p)
+{
+	return task_group_path(task_group(p));
 }
 
 static inline struct task_struct *grr_task_of(struct sched_grr_entity *grr_se)
@@ -70,9 +78,20 @@ static void task_move_group_grr(struct task_struct *p, int on_rq)
 static int
 select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 {
+	char *tg_str = NULL;
+	int len = 0;
 	//printk(KERN_ERR "[cpu %d]select_task_rq_grr: called!\n",
 	//		smp_processor_id());
-	return task_cpu(p); /* IDLE tasks as never migrated */
+
+	tg_str = get_tg_str(p);
+	len = strlen(tg_str);
+	if (len <= 5) {
+		trace_printk("select_task_rq_grr: FG task: %s : %d\n", tg_str, p->pid);
+		return 1;
+	} else {
+		trace_printk("select_task_rq_grr: BG task: %s : %d\n", tg_str, p->pid);
+		return 2;
+	}
 }
 
 #endif /* CONFIG_SMP */
@@ -443,6 +462,9 @@ static void rebalance(struct softirq_action *h)
 __init void init_sched_grr_class(void)
 {
 #ifdef CONFIG_SMP
+	fg_cpu_mask = 0x3;
+	bg_cpu_mask = 0xC;
+
 	//atomic_set(&load_balance_time_slice,GRR_LOAD_BALANCE_TIMESLICE);
         //open_softirq(SCHED_GRR_SOFTIRQ, rebalance);
 #endif /* SMP */

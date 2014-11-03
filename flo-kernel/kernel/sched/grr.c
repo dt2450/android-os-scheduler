@@ -74,21 +74,39 @@ static void task_move_group_grr(struct task_struct *p, int on_rq)
 static int
 select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 {
+	struct rq *rq = task_rq(p);
 	char *tg_str = NULL;
 	int len = 0;
+	int min_cpu = 0;
+	unsigned long min_q_len = (unsigned long)-1;
+	int curr_cpu = 0;
+	int cpu_mask = 0;
 	//printk(KERN_ERR "[cpu %d]select_task_rq_grr: called!\n",
 	//		smp_processor_id());
 
 	tg_str = get_tg_str(p);
 	len = strlen(tg_str);
-	/*if (len <= 5) {
+	if (len <= 5) {
 		trace_printk("select_task_rq_grr: FG task: %s : %d\n", tg_str, p->pid);
-		return 1;
+		cpu_mask = fg_cpu_mask;
+		//return 1;
 	} else {
 		trace_printk("select_task_rq_grr: BG task: %s : %d\n", tg_str, p->pid);
-		return 2;
-	}*/
-	return 1;	
+		cpu_mask = bg_cpu_mask;
+		//return 2;
+	}
+	for_each_online_cpu(curr_cpu) {
+		trace_printk("No. of tasks on CPU %d = %d\n",
+				curr_cpu, rq->grr.grr_nr_running);
+		if (cpu_mask & 1<<curr_cpu) {
+			if (rq->grr.grr_nr_running < min_q_len) {
+				min_q_len = rq->grr.grr_nr_running;
+				min_cpu = curr_cpu;
+			}
+		}
+	}
+	trace_printk("select_task_rq_grr: selected CPU: %d\n", min_cpu);
+	return min_cpu;
 }
 
 #endif /* CONFIG_SMP */

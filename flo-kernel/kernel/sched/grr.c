@@ -70,7 +70,6 @@ static void task_move_group_grr(struct task_struct *p, int on_rq)
 }
 
 #ifdef CONFIG_SMP
-//TODO: to be implemented
 static int
 select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 {
@@ -88,14 +87,12 @@ select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 	if (len <= 5) {
 		trace_printk("select_task_rq_grr: FG task: %s : %d\n", tg_str, p->pid);
 		cpu_mask = fg_cpu_mask;
-		//return 1;
 	} else {
 		trace_printk("select_task_rq_grr: BG task: %s : %d\n", tg_str, p->pid);
 		cpu_mask = bg_cpu_mask;
-		//return 2;
 	}
 	//for part 1 iv)
-	cpu_mask = -1;
+	//cpu_mask = -1;
 	rcu_read_lock();
 	for_each_online_cpu(curr_cpu) {
 		struct rq *rq = cpu_rq(curr_cpu);

@@ -218,6 +218,7 @@ enqueue_task_grr(struct rq *rq, struct task_struct *p, int flags)
 #endif
 
 	grr_rq->grr_nr_running++;
+	//printk("[GRR_ENQUEUE] grr_nr_running=[%d]\n",grr_rq->grr_nr_running);
 	inc_nr_running(rq);
 	//printlist(rq);
 }
@@ -263,6 +264,7 @@ dequeue_task_grr(struct rq *rq, struct task_struct *p, int flags)
 		grr_rq->grr_nr_running--;
 		dec_nr_running(rq);
 	}
+	//printk("[GRR_DEQUEUE] grr_nr_running=[%d]\n",grr_rq->grr_nr_running);
 	grr_se->on_rq = 0;
 	//printlist(rq);
 }
@@ -439,9 +441,9 @@ static void rebalance(struct softirq_action *h)
 	heavily_loaded_grr_rq = lightly_loaded_grr_rq = NULL;
 	max_proc_on_run_q = 0;
 	min_proc_on_run_q = ULONG_MAX;
+	heavy_cpu = light_cpu = 0;
 	rcu_read_lock();
 	for_each_possible_cpu(i){
-
         	struct rq *this_rq = cpu_rq(i);
 		struct grr_rq *grr_rq = &this_rq->grr;
 		if (max_proc_on_run_q < grr_rq->grr_nr_running) {
@@ -459,30 +461,48 @@ static void rebalance(struct softirq_action *h)
 	}
 	rcu_read_unlock();
 	/*condition for rebalance go ahead*/
-	printk("[GRR_LOADBALANCER]In the rebalance method\n[GRR_LOADBALANCER] min_proc_on_run_q:[%d] max_proc_on_run_q[%d]\n", min_proc_on_run_q, max_proc_on_run_q);
+	printk("[GRR_LOADBALANCER]In the rebalance method\n[GRR_LOADBALANCER] min_proc_on_run_q:[%lu] max_proc_on_run_q[%lu]\n", min_proc_on_run_q, max_proc_on_run_q);
 	if ((min_proc_on_run_q+1) != max_proc_on_run_q){
 		/*lock both run queues*/
+		printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--1\n", heavy_cpu, light_cpu);
 		local_irq_save(flags);
 		double_rq_lock(lightly_loaded_rq, heavily_loaded_rq);
-		if(heavily_loaded_grr_rq->curr == NULL){
+		printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--2\n", heavy_cpu, light_cpu);
+		/*TODO:FIX THIS!!!!*/
+		/*if(heavily_loaded_grr_rq->curr == NULL){
 			//directly pick the task from the head of the rq
 			//beacuse no task is currently running
 			grr_se = pick_next_grr_entity(heavily_loaded_rq,
 					heavily_loaded_grr_rq);
+			printk("[GRR_LOADBALANCER] curr is NULL\n");
 			p = grr_task_of(grr_se);
 		}else{
 			//pick the task which is the next task after
 			//grr_rq->curr
+			printk("[GRR_LOADBALANCER] curr is NOT NULL\n");
 			struct list_head *queue = &heavily_loaded_grr_rq->queue;
+			printk("[GRR_LOADBALANCER] queue[%x]\n",queue);
 			grr_se = list_entry(queue->next->next,
 					struct sched_grr_entity,
 					run_list);
+			printk("[GRR_LOADBALANCER] grr_se[%x]\n",grr_se);
 			p = grr_task_of(grr_se);
+			printk("[GRR_LOADBALANCER] p[%x]\n",p);
 		}
+		printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--3\n", heavy_cpu, light_cpu);
+		printk("[GRR_LOADBALANCER] heavily_loaded_grr_rq[%x] lightly_loaded_grr_rq[%x] heavily_loaded_rq[%x] lightly_loaded_rq[%x]--3.1\n",
+									heavily_loaded_grr_rq, lightly_loaded_grr_rq, heavily_loaded_rq, lightly_loaded_rq);
+		__dequeue_entity(grr_se);
 		enqueue_task_grr(lightly_loaded_rq, p, 0);
+		*/
+		/*TODO:FIX THIS!!!!*/
 		/*unlock both run queues*/
+		
+		printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--4\n", heavy_cpu, light_cpu);
 		double_rq_unlock(lightly_loaded_rq, heavily_loaded_rq);
+		printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--5\n", heavy_cpu, light_cpu);
 		local_irq_restore(flags);
+		printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--6\n", heavy_cpu, light_cpu);
 	}
 }
 

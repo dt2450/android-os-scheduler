@@ -513,10 +513,7 @@ static void rebalance(struct softirq_action *h)
 		printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--3\n", heavy_cpu, light_cpu);
 		printk("[GRR_LOADBALANCER] heavily_loaded_grr_rq[%x] lightly_loaded_grr_rq[%x] heavily_loaded_rq[%x] lightly_loaded_rq[%x]--3.1\n",
 									heavily_loaded_grr_rq, lightly_loaded_grr_rq, heavily_loaded_rq, lightly_loaded_rq);
-		/*decrementing here since decrement is not being performed in __dequeue_entity*/
-		heavily_loaded_grr_rq->grr_nr_running--;
-		__dequeue_entity(grr_se);
-		
+		dequeue_task_grr(heavily_loaded_rq, p, 0);
 		enqueue_task_grr(lightly_loaded_rq, p, 0);
 		/*unlock both run queues*/
 		

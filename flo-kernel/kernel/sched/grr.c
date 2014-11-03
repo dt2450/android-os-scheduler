@@ -74,7 +74,6 @@ static void task_move_group_grr(struct task_struct *p, int on_rq)
 static int
 select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 {
-	struct rq *rq = task_rq(p);
 	char *tg_str = NULL;
 	int len = 0;
 	int min_cpu = 0;
@@ -95,7 +94,11 @@ select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 		cpu_mask = bg_cpu_mask;
 		//return 2;
 	}
+	//for part 1 iv)
+	cpu_mask = -1;
+	rcu_read_lock();
 	for_each_online_cpu(curr_cpu) {
+		struct rq *rq = cpu_rq(curr_cpu);
 		trace_printk("No. of tasks on CPU %d = %d\n",
 				curr_cpu, rq->grr.grr_nr_running);
 		if (cpu_mask & 1<<curr_cpu) {
@@ -105,6 +108,7 @@ select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 			}
 		}
 	}
+	rcu_read_unlock();
 	trace_printk("select_task_rq_grr: selected CPU: %d\n", min_cpu);
 	return min_cpu;
 }
@@ -462,7 +466,7 @@ static void rebalance(struct softirq_action *h)
 	heavy_cpu = light_cpu = 0;
 	rcu_read_lock();
 	for_each_possible_cpu(i){
-        	struct rq *this_rq = cpu_rq(i);
+		struct rq *this_rq = cpu_rq(i);
 		struct grr_rq *grr_rq = &this_rq->grr;
 		if (max_proc_on_run_q < grr_rq->grr_nr_running) {
 			max_proc_on_run_q = grr_rq->grr_nr_running;

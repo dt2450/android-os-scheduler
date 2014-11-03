@@ -74,6 +74,8 @@ static void task_move_group_grr(struct task_struct *p, int on_rq)
 static int
 select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 {
+	return 1;
+	/*
 	char *tg_str = NULL;
 	int len = 0;
 	int min_cpu = 0;
@@ -111,6 +113,7 @@ select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 	rcu_read_unlock();
 	trace_printk("select_task_rq_grr: selected CPU: %d\n", min_cpu);
 	return min_cpu;
+	*/
 }
 
 #endif /* CONFIG_SMP */
@@ -222,8 +225,8 @@ enqueue_task_grr(struct rq *rq, struct task_struct *p, int flags)
 
 	//printk(KERN_ERR "[cpu %d]enqueue_task_grr: called!!\n",
 	//		smp_processor_id());
-	trace_printk("Task group is %s for pid %d\n",
-			task_group_path(task_group(p)), p->pid);
+	//trace_printk("Task group is %s for pid %d\n",
+	//		task_group_path(task_group(p)), p->pid);
 
 	//printlist(rq);
 

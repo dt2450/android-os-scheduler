@@ -192,9 +192,9 @@ void print_grr_rq(struct seq_file *m, int cpu)
 		tg_str = task_group_path(task_group(p));
 		if (tg_str) {
 			if (strlen(tg_str) <= 5)
-				SEQ_printf(m, "  Task: %d, PID: %d, Group: %-10s (FG)\n", i++, p->pid, tg_str);
+				SEQ_printf(m, "  Task: %d - %s, PID: %d, Group: %-10s (FG)\n", i++, p->comm, p->pid, tg_str);
 			else
-				SEQ_printf(m, "  Task: %d, PID: %d, Group: %-10s (BG)\n", i++, p->pid, tg_str);
+				SEQ_printf(m, "  Task: %d - %s, PID: %d, Group: %-10s (BG)\n", i++, p->comm, p->pid, tg_str);
 		}
 		else {
 			SEQ_printf(m, "  %s %d:  %-30s\n", "Task ", i++, "NULL :(");
@@ -341,7 +341,7 @@ static void print_cpu(struct seq_file *m, int cpu)
 #undef P64
 #endif
 	spin_lock_irqsave(&sched_debug_lock, flags);
-	//print_cfs_stats(m, cpu);
+	print_cfs_stats(m, cpu);
 	//print_rt_stats(m, cpu);
 	print_grr_stats(m, cpu);
 

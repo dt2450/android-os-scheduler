@@ -163,20 +163,44 @@ static void print_rq(struct seq_file *m, struct rq *rq, int rq_cpu)
 	read_unlock_irqrestore(&tasklist_lock, flags);
 }
 
-void print_grr_rq(struct seq_file *m, int cpu, struct grr_rq *grr_rq)
+void print_grr_rq(struct seq_file *m, int cpu)
 {
-	struct rq *rq = cpu_rq(cpu);
-	struct sched_entity *last;
 	unsigned long flags;
 
+	struct task_struct *p;
+        struct rq *rq = cpu_rq(cpu);
+        struct grr_rq *grr_rq = &rq->grr;
+        struct sched_grr_entity *grr_se;
+        struct list_head *queue = &grr_rq->queue;
+
+	int i = 0;
+	char *tg_str = NULL;
+/*
 #ifdef CONFIG_FAIR_GROUP_SCHED
 	//SEQ_printf(m, "\ncfs_rq[%d]:%s\n", cpu, task_group_path(cfs_rq->tg));
+	SEQ_printf(m, "\nin IF cfs_rq[%d]:\n", cpu);
 #else
 	SEQ_printf(m, "\ngrr_rq[%d]:\n", cpu);
 #endif
+*/
+	
+	SEQ_printf(m, "\ngrr_rq[%d]:\n", cpu);
 	raw_spin_lock_irqsave(&rq->lock, flags);
 	SEQ_printf(m, "  .%-30s: %ld\n", "grr_nr_running", grr_rq->grr_nr_running);
-	//TODO: print some group-related stats
+	list_for_each_entry(grr_se, queue, run_list) {
+		p = container_of(grr_se, struct task_struct, grre);
+		tg_str = task_group_path(task_group(p));
+		if (tg_str) {
+			if (strlen(tg_str) <= 5)
+				SEQ_printf(m, "  Task: %d, PID: %d, Group: %-10s (FG)\n", i++, p->pid, tg_str);
+			else
+				SEQ_printf(m, "  Task: %d, PID: %d, Group: %-10s (BG)\n", i++, p->pid, tg_str);
+		}
+		else {
+			SEQ_printf(m, "  %s %d:  %-30s\n", "Task ", i++, "NULL :(");
+		}
+        }
+	raw_spin_unlock_irqrestore(&rq->lock, flags);
 }
 
 void print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)

@@ -132,17 +132,6 @@ select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 	//		smp_processor_id());
 
 	tg_str = get_tg_str(p);
-	/*
-	if (strstr(p->comm, "chro")) {
-		printk("FOUND BROWSER in select_task_rq_grr: Task group: %s, pid: %d, cpu: %d\n",
-				task_group_path(task_group(p)),
-				p->pid, task_cpu(p));
-
-		trace_printk("FOUND BROWSER: Task group: %s, pid: %d, cpu: %d\n",
-				task_group_path(task_group(p)),
-				p->pid, task_cpu(p));
-	}
-	*/
 	len = strlen(tg_str);
 	if (len <= 5) {
 		trace_printk("select_task_rq_grr: FG task: %s : %d\n", tg_str, p->pid);
@@ -241,54 +230,6 @@ static void rebalance(struct softirq_action *h)
 		double_rq_unlock(lightly_loaded_rq,
 				heavily_loaded_rq);
 		local_irq_restore(flags);
-		/*
-		if(heavily_loaded_grr_rq->curr == NULL){
-			printk("[GRR_LOADBALANCER] curr is NULL\n");
-			//for debugging
-			double_rq_unlock(lightly_loaded_rq,
-					heavily_loaded_rq);
-			local_irq_restore(flags);
-			rcu_read_unlock();
-			return;
-
-			//directly pick the task from the head of the rq
-			//beacuse no task is currently running
-			grr_se = pick_next_grr_entity(heavily_loaded_rq,
-					heavily_loaded_grr_rq);
-			p = grr_task_of(grr_se);
-		}else{
-			//pick the task which is the next task after
-			//grr_rq->curr
-			printk("[GRR_LOADBALANCER] curr is NOT NULL\n");
-			struct list_head *queue = &heavily_loaded_grr_rq->queue;
-			printk("[GRR_LOADBALANCER] queue[%x]\n",queue);
-			if(queue->next == queue || queue->next->next == queue) {
-				printk("[GRR_LOADBALANCER] next = %x\n",
-						queue->next);
-				double_rq_unlock(lightly_loaded_rq,
-						heavily_loaded_rq);
-				local_irq_restore(flags);
-				rcu_read_unlock();
-				return;
-			}
-			grr_se = list_entry(queue->next->next,
-					struct sched_grr_entity,
-					run_list);
-			printk("[GRR_LOADBALANCER] grr_se[%x]\n",grr_se);
-			p = grr_task_of(grr_se);
-			printk("[GRR_LOADBALANCER] p[%x]\n",p);
-		}
-		printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--3\n", heavy_cpu, light_cpu);
-		printk("[GRR_LOADBALANCER] heavily_loaded_grr_rq[%x] lightly_loaded_grr_rq[%x] heavily_loaded_rq[%x] lightly_loaded_rq[%x]--3.1\n",
-									heavily_loaded_grr_rq, lightly_loaded_grr_rq, heavily_loaded_rq, lightly_loaded_rq);
-		dequeue_task_grr(heavily_loaded_rq, p, 0);
-		enqueue_task_grr(lightly_loaded_rq, p, 0);
-		*/
-		/*unlock both run queues*/
-
-		//printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--4\n", heavy_cpu, light_cpu);
-		//printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--5\n", heavy_cpu, light_cpu);
-		//printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--6\n", heavy_cpu, light_cpu);
 	}
 }
 

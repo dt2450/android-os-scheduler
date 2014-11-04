@@ -62,7 +62,7 @@ void printlist(struct rq *rq)
 	//printk("[cpu %d]Size of queue: %d\n", smp_processor_id(), i);
 }
 
-static struct task_struct *find_first_movable_task(struct rq *rq, int dst_cpu)
+static struct task_struct *get_first_migrateable_task(struct rq *rq, int dst_cpu)
 {
 	struct task_struct *p;
 	struct sched_grr_entity *grr_se;
@@ -228,7 +228,7 @@ static void rebalance(struct softirq_action *h)
 		local_irq_save(flags);
 		double_rq_lock(lightly_loaded_rq, heavily_loaded_rq);
 		
-		p = find_first_movable_task(heavily_loaded_rq, light_cpu);
+		p = get_first_migrateable_task(heavily_loaded_rq, light_cpu);
 		if (p) {
 			move_task(heavily_loaded_rq, lightly_loaded_rq, p,
 					light_cpu);

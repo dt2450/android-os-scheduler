@@ -7,6 +7,8 @@
  *
  */
 
+#define PART_I_ONLY 0
+
 static atomic_t load_balance_time_slice;
 
 static char group_path[PATH_MAX];
@@ -142,7 +144,8 @@ select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 		cpu_mask = bg_cpu_mask;
 	}
 	//for part 1 iv)
-	//cpu_mask = -1;
+	if (PART_I_ONLY)
+		cpu_mask = -1;
 	rcu_read_lock();
 	for_each_online_cpu(curr_cpu) {
 		struct rq *rq = cpu_rq(curr_cpu);
@@ -252,8 +255,14 @@ static void rebal_group(int cpu_mask)
 
 static void rebalance(struct softirq_action *h)
 {
-	rebal_group(fg_cpu_mask);
-	rebal_group(bg_cpu_mask);
+
+	if(PART_I_ONLY) {
+		/* treat all CPUs as same */
+		rebal_group(-1);
+	} else {
+		rebal_group(fg_cpu_mask);
+		rebal_group(bg_cpu_mask);
+	}
 }
 
 __init void init_sched_grr_class(void)

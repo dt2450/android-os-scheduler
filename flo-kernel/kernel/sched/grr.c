@@ -101,6 +101,19 @@ static void task_move_group_grr(struct task_struct *p, int on_rq)
 	trace_printk("task_move_group_grr: Task group is %s for pid %d\n",
 			task_group_path(task_group(p)), p->pid);
 
+	//printk("task_move_group_grr: Task group: %s, pid: %d, cpu: %d\n",
+	//		task_group_path(task_group(p)), p->pid, task_cpu(p));
+	/*
+	if (strstr(p->comm, "chro")) {
+		printk("FOUND BROWSER in task_move_group_grr: Task group: %s, pid: %d, cpu: %d\n",
+				task_group_path(task_group(p)),
+				p->pid, task_cpu(p));
+
+		trace_printk("FOUND BROWSER: Task group: %s, pid: %d, cpu: %d\n",
+				task_group_path(task_group(p)),
+				p->pid, task_cpu(p));
+	}
+	*/
 	set_task_rq(p, task_cpu(p));
 
 }
@@ -119,6 +132,17 @@ select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 	//		smp_processor_id());
 
 	tg_str = get_tg_str(p);
+	/*
+	if (strstr(p->comm, "chro")) {
+		printk("FOUND BROWSER in select_task_rq_grr: Task group: %s, pid: %d, cpu: %d\n",
+				task_group_path(task_group(p)),
+				p->pid, task_cpu(p));
+
+		trace_printk("FOUND BROWSER: Task group: %s, pid: %d, cpu: %d\n",
+				task_group_path(task_group(p)),
+				p->pid, task_cpu(p));
+	}
+	*/
 	len = strlen(tg_str);
 	if (len <= 5) {
 		trace_printk("select_task_rq_grr: FG task: %s : %d\n", tg_str, p->pid);
@@ -200,15 +224,15 @@ static void rebalance(struct softirq_action *h)
 	}
 	if ((max_proc_on_run_q - min_proc_on_run_q) > 1){
 		/*lock both run queues*/
-		printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--1\n", heavy_cpu, light_cpu);
+		//printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--1\n", heavy_cpu, light_cpu);
 		local_irq_save(flags);
 		double_rq_lock(lightly_loaded_rq, heavily_loaded_rq);
-		printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--2\n", heavy_cpu, light_cpu);
 		
 		p = find_first_movable_task(heavily_loaded_rq, light_cpu);
 		if (p) {
 			move_task(heavily_loaded_rq, lightly_loaded_rq, p,
 					light_cpu);
+			printk("[GRR_LOADBALANCER] moving pid %d from cpu[%d] to cpu[%d]--2\n", p->pid, heavy_cpu, light_cpu);
 
 		} else {
 			printk("[GRR_LOADBALANCER] p is NULL\n");
@@ -262,9 +286,9 @@ static void rebalance(struct softirq_action *h)
 		*/
 		/*unlock both run queues*/
 
-		printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--4\n", heavy_cpu, light_cpu);
-		printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--5\n", heavy_cpu, light_cpu);
-		printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--6\n", heavy_cpu, light_cpu);
+		//printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--4\n", heavy_cpu, light_cpu);
+		//printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--5\n", heavy_cpu, light_cpu);
+		//printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--6\n", heavy_cpu, light_cpu);
 	}
 }
 

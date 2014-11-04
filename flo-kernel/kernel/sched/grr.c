@@ -1,6 +1,6 @@
 #include "sched.h"
-#include <linux/smp.h>
 #include <linux/limits.h>
+#include <linux/smp.h>
 #include <linux/interrupt.h>
 /*
  * grr scheduling class.
@@ -11,8 +11,6 @@ static atomic_t load_balance_time_slice;
 
 static char group_path[PATH_MAX];
 
-static int fg_cpu_mask = 0;
-static int bg_cpu_mask = 0;
 
 int ccc = 0;
 
@@ -83,6 +81,9 @@ static struct task_struct *find_first_movable_task(struct rq *rq, int dst_cpu)
 }
 
 #ifdef CONFIG_SMP
+
+static int fg_cpu_mask = 0;
+static int bg_cpu_mask = 0;
 
 static void move_task(struct rq *src_rq, struct rq *dst_rq,
 		struct task_struct *p, int dst_cpu)
@@ -159,6 +160,10 @@ select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 	return min_cpu;
 }
 
+
+
+
+
 /*
  * This function will rebalance the various queues as per the policy 
  * Periodic load balancing should be implemented such that a single job
@@ -170,9 +175,15 @@ select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
  * restrictions on which CPU they can be run on. Load balancing should be
  * attempted every 500ms for each CPU.
  */
-static void rebalance(struct softirq_action *h)
+
+static void rebal_group(int cpu_mask)
 {
 	int i,heavy_cpu,light_cpu;
+	int cpu_mask = 0;
+
+	//for debugging
+	int cpus_checked = 0;
+
 	unsigned long max_proc_on_run_q,min_proc_on_run_q;
 	//struct grr_rq *heavily_loaded_grr_rq, *lightly_loaded_grr_rq;
 	struct rq *heavily_loaded_rq, *lightly_loaded_rq;
@@ -186,24 +197,29 @@ static void rebalance(struct softirq_action *h)
 	heavy_cpu = light_cpu = 0;
 
 	rcu_read_lock();
+	printk("\n~~~~\n[GRR_LOADBALANCER] Checking load for %d:\n", cpu_mask);
 	for_each_possible_cpu(i){
-		struct rq *this_rq = cpu_rq(i);
-		struct grr_rq *grr_rq = &this_rq->grr;
-		if (max_proc_on_run_q < grr_rq->grr_nr_running) {
-			max_proc_on_run_q = grr_rq->grr_nr_running;
-			//heavily_loaded_grr_rq = grr_rq;
-			heavily_loaded_rq = this_rq;
-			heavy_cpu = i;
-		}
-		if (grr_rq->grr_nr_running < min_proc_on_run_q) {
-			min_proc_on_run_q = grr_rq->grr_nr_running;
-			//lightly_loaded_grr_rq = grr_rq;
-			lightly_loaded_rq = this_rq;
-			light_cpu = i;
+		if (cpu_mask & 1<<curr_cpu) {
+			cpus_checked++;
+			struct rq *this_rq = cpu_rq(i);
+			struct grr_rq *grr_rq = &this_rq->grr;
+			if (max_proc_on_run_q < grr_rq->grr_nr_running) {
+				max_proc_on_run_q = grr_rq->grr_nr_running;
+				//heavily_loaded_grr_rq = grr_rq;
+				heavily_loaded_rq = this_rq;
+				heavy_cpu = i;
+			}
+			if (grr_rq->grr_nr_running < min_proc_on_run_q) {
+				min_proc_on_run_q = grr_rq->grr_nr_running;
+				//lightly_loaded_grr_rq = grr_rq;
+				lightly_loaded_rq = this_rq;
+				light_cpu = i;
+			}
 		}
 	}
 	rcu_read_unlock();
 
+	printk("[GRR_LOADBALANCER] %s cpus checked for %d:\n", cpus_checked, cpu_mask);
 	/*condition for rebalance go ahead*/
 	printk("[GRR_LOADBALANCER]In the rebalance method\n[GRR_LOADBALANCER] cpu[%d] min_proc_on_run_q:[%lu] cpu[%d] max_proc_on_run_q[%lu]\n",
 			light_cpu, min_proc_on_run_q, heavy_cpu, max_proc_on_run_q);
@@ -231,6 +247,14 @@ static void rebalance(struct softirq_action *h)
 				heavily_loaded_rq);
 		local_irq_restore(flags);
 	}
+}
+
+
+
+static void rebalance(struct softirq_action *h)
+{
+	rebal_group(fg_cpu_mask);
+	rebal_group(bg_cpu_mask);
 }
 
 __init void init_sched_grr_class(void)

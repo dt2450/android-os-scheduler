@@ -277,6 +277,12 @@ __init void init_sched_grr_class(void)
         open_softirq(SCHED_GRR_SOFTIRQ, rebalance);
 
 }
+#else
+
+__init void init_sched_grr_class(void)
+{
+	return;
+}
 
 #endif /* CONFIG_SMP */
 

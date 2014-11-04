@@ -609,7 +609,6 @@ static unsigned int get_rr_interval_grr(struct rq *rq, struct task_struct *task)
  * Simple, special scheduling class for the per-CPU idle tasks:
  */
 const struct sched_class grr_sched_class = {
-	//TODO: Move at correct location
 	.next			= &fair_sched_class,
 	//.next			= &idle_sched_class,
 	.enqueue_task		= enqueue_task_grr,
@@ -621,8 +620,8 @@ const struct sched_class grr_sched_class = {
 	.pick_next_task		= pick_next_task_grr,
 	.put_prev_task		= put_prev_task_grr,
 
-	.task_move_group	= task_move_group_grr,
 #ifdef CONFIG_SMP
+	.task_move_group	= task_move_group_grr,
 	.select_task_rq		= select_task_rq_grr,
 /*
 	.set_cpus_allowed       = set_cpus_allowed_rt,

@@ -1,6 +1,6 @@
 #include "sched.h"
-#include <linux/smp.h>
 #include <linux/limits.h>
+#include <linux/smp.h>
 #include <linux/interrupt.h>
 /*
  * grr scheduling class.
@@ -11,8 +11,6 @@ static atomic_t load_balance_time_slice;
 
 static char group_path[PATH_MAX];
 
-static int fg_cpu_mask = 0;
-static int bg_cpu_mask = 0;
 
 int ccc = 0;
 
@@ -84,6 +82,9 @@ static struct task_struct *get_first_migrateable_task(struct rq *rq, int dst_cpu
 
 #ifdef CONFIG_SMP
 
+static int fg_cpu_mask = 0;
+static int bg_cpu_mask = 0;
+
 static void move_task(struct rq *src_rq, struct rq *dst_rq,
 		struct task_struct *p, int dst_cpu)
 {
@@ -132,17 +133,6 @@ select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 	//		smp_processor_id());
 
 	tg_str = get_tg_str(p);
-	/*
-	if (strstr(p->comm, "chro")) {
-		printk("FOUND BROWSER in select_task_rq_grr: Task group: %s, pid: %d, cpu: %d\n",
-				task_group_path(task_group(p)),
-				p->pid, task_cpu(p));
-
-		trace_printk("FOUND BROWSER: Task group: %s, pid: %d, cpu: %d\n",
-				task_group_path(task_group(p)),
-				p->pid, task_cpu(p));
-	}
-	*/
 	len = strlen(tg_str);
 	if (len <= 5) {
 		trace_printk("select_task_rq_grr: FG task: %s : %d\n", tg_str, p->pid);
@@ -170,6 +160,10 @@ select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 	return min_cpu;
 }
 
+
+
+
+
 /*
  * This function will rebalance the various queues as per the policy 
  * Periodic load balancing should be implemented such that a single job
@@ -181,9 +175,15 @@ select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
  * restrictions on which CPU they can be run on. Load balancing should be
  * attempted every 500ms for each CPU.
  */
-static void rebalance(struct softirq_action *h)
+
+static void rebal_group(int cpu_mask)
 {
 	int i,heavy_cpu,light_cpu;
+	int cpu_mask = 0;
+
+	//for debugging
+	int cpus_checked = 0;
+
 	unsigned long max_proc_on_run_q,min_proc_on_run_q;
 	//struct grr_rq *heavily_loaded_grr_rq, *lightly_loaded_grr_rq;
 	struct rq *heavily_loaded_rq, *lightly_loaded_rq;
@@ -197,24 +197,29 @@ static void rebalance(struct softirq_action *h)
 	heavy_cpu = light_cpu = 0;
 
 	rcu_read_lock();
+	printk("\n~~~~\n[GRR_LOADBALANCER] Checking load for %d:\n", cpu_mask);
 	for_each_possible_cpu(i){
-		struct rq *this_rq = cpu_rq(i);
-		struct grr_rq *grr_rq = &this_rq->grr;
-		if (max_proc_on_run_q < grr_rq->grr_nr_running) {
-			max_proc_on_run_q = grr_rq->grr_nr_running;
-			//heavily_loaded_grr_rq = grr_rq;
-			heavily_loaded_rq = this_rq;
-			heavy_cpu = i;
-		}
-		if (grr_rq->grr_nr_running < min_proc_on_run_q) {
-			min_proc_on_run_q = grr_rq->grr_nr_running;
-			//lightly_loaded_grr_rq = grr_rq;
-			lightly_loaded_rq = this_rq;
-			light_cpu = i;
+		if (cpu_mask & 1<<curr_cpu) {
+			cpus_checked++;
+			struct rq *this_rq = cpu_rq(i);
+			struct grr_rq *grr_rq = &this_rq->grr;
+			if (max_proc_on_run_q < grr_rq->grr_nr_running) {
+				max_proc_on_run_q = grr_rq->grr_nr_running;
+				//heavily_loaded_grr_rq = grr_rq;
+				heavily_loaded_rq = this_rq;
+				heavy_cpu = i;
+			}
+			if (grr_rq->grr_nr_running < min_proc_on_run_q) {
+				min_proc_on_run_q = grr_rq->grr_nr_running;
+				//lightly_loaded_grr_rq = grr_rq;
+				lightly_loaded_rq = this_rq;
+				light_cpu = i;
+			}
 		}
 	}
 	rcu_read_unlock();
 
+	printk("[GRR_LOADBALANCER] %s cpus checked for %d:\n", cpus_checked, cpu_mask);
 	/*condition for rebalance go ahead*/
 	printk("[GRR_LOADBALANCER]In the rebalance method\n[GRR_LOADBALANCER] cpu[%d] min_proc_on_run_q:[%lu] cpu[%d] max_proc_on_run_q[%lu]\n",
 			light_cpu, min_proc_on_run_q, heavy_cpu, max_proc_on_run_q);
@@ -241,55 +246,15 @@ static void rebalance(struct softirq_action *h)
 		double_rq_unlock(lightly_loaded_rq,
 				heavily_loaded_rq);
 		local_irq_restore(flags);
-		/*
-		if(heavily_loaded_grr_rq->curr == NULL){
-			printk("[GRR_LOADBALANCER] curr is NULL\n");
-			//for debugging
-			double_rq_unlock(lightly_loaded_rq,
-					heavily_loaded_rq);
-			local_irq_restore(flags);
-			rcu_read_unlock();
-			return;
-
-			//directly pick the task from the head of the rq
-			//beacuse no task is currently running
-			grr_se = pick_next_grr_entity(heavily_loaded_rq,
-					heavily_loaded_grr_rq);
-			p = grr_task_of(grr_se);
-		}else{
-			//pick the task which is the next task after
-			//grr_rq->curr
-			printk("[GRR_LOADBALANCER] curr is NOT NULL\n");
-			struct list_head *queue = &heavily_loaded_grr_rq->queue;
-			printk("[GRR_LOADBALANCER] queue[%x]\n",queue);
-			if(queue->next == queue || queue->next->next == queue) {
-				printk("[GRR_LOADBALANCER] next = %x\n",
-						queue->next);
-				double_rq_unlock(lightly_loaded_rq,
-						heavily_loaded_rq);
-				local_irq_restore(flags);
-				rcu_read_unlock();
-				return;
-			}
-			grr_se = list_entry(queue->next->next,
-					struct sched_grr_entity,
-					run_list);
-			printk("[GRR_LOADBALANCER] grr_se[%x]\n",grr_se);
-			p = grr_task_of(grr_se);
-			printk("[GRR_LOADBALANCER] p[%x]\n",p);
-		}
-		printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--3\n", heavy_cpu, light_cpu);
-		printk("[GRR_LOADBALANCER] heavily_loaded_grr_rq[%x] lightly_loaded_grr_rq[%x] heavily_loaded_rq[%x] lightly_loaded_rq[%x]--3.1\n",
-									heavily_loaded_grr_rq, lightly_loaded_grr_rq, heavily_loaded_rq, lightly_loaded_rq);
-		dequeue_task_grr(heavily_loaded_rq, p, 0);
-		enqueue_task_grr(lightly_loaded_rq, p, 0);
-		*/
-		/*unlock both run queues*/
-
-		//printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--4\n", heavy_cpu, light_cpu);
-		//printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--5\n", heavy_cpu, light_cpu);
-		//printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--6\n", heavy_cpu, light_cpu);
 	}
+}
+
+
+
+static void rebalance(struct softirq_action *h)
+{
+	rebal_group(fg_cpu_mask);
+	rebal_group(bg_cpu_mask);
 }
 
 __init void init_sched_grr_class(void)

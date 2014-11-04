@@ -55,17 +55,51 @@ void printlist(struct rq *rq)
 
 	list_for_each_entry(grr_se, queue, run_list) {
 		p = grr_task_of(grr_se);
-		trace_printk("[cpu %d] pid on this rq: %d\n",
-			smp_processor_id(), p->pid);
+		trace_printk("[cpu %d] pid on this rq: %d group: %s\n",
+			smp_processor_id(), p->pid, get_tg_str(p));
 		i++;
 	}
 	//printk("[cpu %d]Size of queue: %d\n", smp_processor_id(), i);
+}
+
+static struct task_struct *find_first_movable_task(struct rq *rq, int dst_cpu)
+{
+	struct task_struct *p;
+	struct sched_grr_entity *grr_se;
+	struct list_head *curr;
+	struct list_head *queue = &rq->grr.queue;
+
+	if (!rq->grr.grr_nr_running)
+		return NULL;
+
+	list_for_each(curr, queue) {
+		grr_se = list_entry(curr, struct sched_grr_entity, run_list);
+		p = grr_task_of(grr_se);
+		if (!task_running(rq, p) && cpumask_test_cpu(dst_cpu,
+					tsk_cpus_allowed(p)))
+			return p;
+	}
+	return NULL;
+}
+
+static void move_task(struct rq *src_rq, struct rq *dst_rq,
+		struct task_struct *p, int dst_cpu)
+{
+	trace_printk("Moving process %d from cpu %d to %d\n", p->pid,
+			src_rq->cpu, dst_cpu);
+	deactivate_task(src_rq, p, 0);
+	set_task_cpu(p, dst_cpu);
+	activate_task(dst_rq, p, 0);
+	trace_printk("Done Moving process %d from cpu %d to %d\n",
+			p->pid, src_rq->cpu, dst_cpu);
 }
 
 static void task_move_group_grr(struct task_struct *p, int on_rq)
 {
 	trace_printk("task_move_group_grr: Task group is %s for pid %d\n",
 			task_group_path(task_group(p)), p->pid);
+
+	set_task_rq(p, task_cpu(p));
 
 }
 
@@ -451,13 +485,13 @@ static void rebalance(struct softirq_action *h)
 {
 	int i,heavy_cpu,light_cpu;
 	unsigned long max_proc_on_run_q,min_proc_on_run_q;
-	struct grr_rq *heavily_loaded_grr_rq, *lightly_loaded_grr_rq;
+	//struct grr_rq *heavily_loaded_grr_rq, *lightly_loaded_grr_rq;
 	struct rq *heavily_loaded_rq, *lightly_loaded_rq;
-	struct sched_grr_entity *grr_se;
+	//struct sched_grr_entity *grr_se;
 	struct task_struct *p;
 	unsigned long flags;
 	heavily_loaded_rq = lightly_loaded_rq =  NULL;
-	heavily_loaded_grr_rq = lightly_loaded_grr_rq = NULL;
+	//heavily_loaded_grr_rq = lightly_loaded_grr_rq = NULL;
 	max_proc_on_run_q = 0;
 	min_proc_on_run_q = ULONG_MAX;
 	heavy_cpu = light_cpu = 0;
@@ -468,32 +502,46 @@ static void rebalance(struct softirq_action *h)
 		struct grr_rq *grr_rq = &this_rq->grr;
 		if (max_proc_on_run_q < grr_rq->grr_nr_running) {
 			max_proc_on_run_q = grr_rq->grr_nr_running;
-			heavily_loaded_grr_rq = grr_rq;
+			//heavily_loaded_grr_rq = grr_rq;
 			heavily_loaded_rq = this_rq;
 			heavy_cpu = i;
 		}
 		if (grr_rq->grr_nr_running < min_proc_on_run_q) {
 			min_proc_on_run_q = grr_rq->grr_nr_running;
-			lightly_loaded_grr_rq = grr_rq;
+			//lightly_loaded_grr_rq = grr_rq;
 			lightly_loaded_rq = this_rq;
 			light_cpu = i;
 		}
 	}
+	rcu_read_unlock();
 
 	/*condition for rebalance go ahead*/
 	printk("[GRR_LOADBALANCER]In the rebalance method\n[GRR_LOADBALANCER] cpu[%d] min_proc_on_run_q:[%lu] cpu[%d] max_proc_on_run_q[%lu]\n",
 			light_cpu, min_proc_on_run_q, heavy_cpu, max_proc_on_run_q);
 	if (light_cpu == heavy_cpu) {
 		printk("[GRR_LOADBALANCER] Same CPUs id: %d\n", light_cpu);
-		rcu_read_unlock();
 		return;
 	}
-	if ((min_proc_on_run_q+1) != max_proc_on_run_q){
+	if ((max_proc_on_run_q - min_proc_on_run_q) > 1){
 		/*lock both run queues*/
 		printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--1\n", heavy_cpu, light_cpu);
 		local_irq_save(flags);
 		double_rq_lock(lightly_loaded_rq, heavily_loaded_rq);
 		printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--2\n", heavy_cpu, light_cpu);
+		
+		p = find_first_movable_task(heavily_loaded_rq, light_cpu);
+		if (p) {
+			move_task(heavily_loaded_rq, lightly_loaded_rq, p,
+					light_cpu);
+
+		} else {
+			printk("[GRR_LOADBALANCER] p is NULL\n");
+		}
+
+		double_rq_unlock(lightly_loaded_rq,
+				heavily_loaded_rq);
+		local_irq_restore(flags);
+		/*
 		if(heavily_loaded_grr_rq->curr == NULL){
 			printk("[GRR_LOADBALANCER] curr is NULL\n");
 			//for debugging
@@ -535,15 +583,13 @@ static void rebalance(struct softirq_action *h)
 									heavily_loaded_grr_rq, lightly_loaded_grr_rq, heavily_loaded_rq, lightly_loaded_rq);
 		dequeue_task_grr(heavily_loaded_rq, p, 0);
 		enqueue_task_grr(lightly_loaded_rq, p, 0);
+		*/
 		/*unlock both run queues*/
 
 		printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--4\n", heavy_cpu, light_cpu);
-		double_rq_unlock(lightly_loaded_rq, heavily_loaded_rq);
 		printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--5\n", heavy_cpu, light_cpu);
-		local_irq_restore(flags);
 		printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--6\n", heavy_cpu, light_cpu);
 	}
-	rcu_read_unlock();
 }
 
 __init void init_sched_grr_class(void)

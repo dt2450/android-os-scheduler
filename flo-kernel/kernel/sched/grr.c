@@ -633,20 +633,10 @@ static unsigned int get_rr_interval_grr(struct rq *rq, struct task_struct *task)
                 return 0;
 }
 
-
 void print_grr_stats(struct seq_file *m, int cpu)
 {
-	struct task_struct *p;
-	struct rq *rq = cpu_rq(cpu);
-	struct grr_rq *grr_rq = &rq->grr;
-	struct sched_grr_entity *grr_se;
-	struct list_head *queue = &grr_rq->queue;
-
 	rcu_read_lock();
-	list_for_each_entry(grr_se, queue, run_list) {
-		p = grr_task_of(grr_se);
-		print_grr_rq(m, cpu, grr_rq);
-	}
+	print_grr_rq(m, cpu);
 	rcu_read_unlock();
 }
 

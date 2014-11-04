@@ -163,6 +163,22 @@ static void print_rq(struct seq_file *m, struct rq *rq, int rq_cpu)
 	read_unlock_irqrestore(&tasklist_lock, flags);
 }
 
+void print_grr_rq(struct seq_file *m, int cpu, struct grr_rq *grr_rq)
+{
+	struct rq *rq = cpu_rq(cpu);
+	struct sched_entity *last;
+	unsigned long flags;
+
+#ifdef CONFIG_FAIR_GROUP_SCHED
+	//SEQ_printf(m, "\ncfs_rq[%d]:%s\n", cpu, task_group_path(cfs_rq->tg));
+#else
+	SEQ_printf(m, "\ngrr_rq[%d]:\n", cpu);
+#endif
+	raw_spin_lock_irqsave(&rq->lock, flags);
+	SEQ_printf(m, "  .%-30s: %ld\n", "grr_nr_running", grr_rq->grr_nr_running);
+	//TODO: print some group-related stats
+}
+
 void print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
 {
 	s64 MIN_vruntime = -1, min_vruntime, max_vruntime = -1,
@@ -301,8 +317,9 @@ static void print_cpu(struct seq_file *m, int cpu)
 #undef P64
 #endif
 	spin_lock_irqsave(&sched_debug_lock, flags);
-	print_cfs_stats(m, cpu);
-	print_rt_stats(m, cpu);
+	//print_cfs_stats(m, cpu);
+	//print_rt_stats(m, cpu);
+	print_grr_stats(m, cpu);
 
 	rcu_read_lock();
 	print_rq(m, rq, cpu);

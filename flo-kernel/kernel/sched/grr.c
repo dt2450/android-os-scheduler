@@ -47,7 +47,7 @@ void printlist(struct rq *rq)
 	int i = 0;
 
 	if (grr_rq == NULL) {
-		printk("grr_rq is NULL\n");
+		trace_printk("grr_rq is NULL\n");
 		return;
 	}
 
@@ -179,7 +179,6 @@ select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 static void rebal_group(int cpu_mask)
 {
 	int i,heavy_cpu,light_cpu;
-	int cpu_mask = 0;
 
 	//for debugging
 	int cpus_checked = 0;
@@ -197,9 +196,9 @@ static void rebal_group(int cpu_mask)
 	heavy_cpu = light_cpu = 0;
 
 	rcu_read_lock();
-	printk("\n~~~~\n[GRR_LOADBALANCER] Checking load for %d:\n", cpu_mask);
+	trace_printk("\n~~~~\n[GRR_LOADBALANCER] Checking load for %d:\n", cpu_mask);
 	for_each_possible_cpu(i){
-		if (cpu_mask & 1<<curr_cpu) {
+		if (cpu_mask & (1<<i)) {
 			cpus_checked++;
 			struct rq *this_rq = cpu_rq(i);
 			struct grr_rq *grr_rq = &this_rq->grr;
@@ -219,12 +218,12 @@ static void rebal_group(int cpu_mask)
 	}
 	rcu_read_unlock();
 
-	printk("[GRR_LOADBALANCER] %s cpus checked for %d:\n", cpus_checked, cpu_mask);
+	trace_printk("[GRR_LOADBALANCER] %d cpus checked for %d:\n", cpus_checked, cpu_mask);
 	/*condition for rebalance go ahead*/
-	printk("[GRR_LOADBALANCER]In the rebalance method\n[GRR_LOADBALANCER] cpu[%d] min_proc_on_run_q:[%lu] cpu[%d] max_proc_on_run_q[%lu]\n",
+	trace_printk("[GRR_LOADBALANCER]In the rebalance method\n[GRR_LOADBALANCER] cpu[%d] min_proc_on_run_q:[%lu] cpu[%d] max_proc_on_run_q[%lu]\n",
 			light_cpu, min_proc_on_run_q, heavy_cpu, max_proc_on_run_q);
 	if (light_cpu == heavy_cpu) {
-		printk("[GRR_LOADBALANCER] Same CPUs id: %d\n", light_cpu);
+		trace_printk("[GRR_LOADBALANCER] Same CPUs id: %d\n", light_cpu);
 		return;
 	}
 	if ((max_proc_on_run_q - min_proc_on_run_q) > 1){
@@ -237,10 +236,10 @@ static void rebal_group(int cpu_mask)
 		if (p) {
 			move_task(heavily_loaded_rq, lightly_loaded_rq, p,
 					light_cpu);
-			printk("[GRR_LOADBALANCER] moving pid %d from cpu[%d] to cpu[%d]--2\n", p->pid, heavy_cpu, light_cpu);
+			trace_printk("[GRR_LOADBALANCER] moving pid %d from cpu[%d] to cpu[%d]--2\n", p->pid, heavy_cpu, light_cpu);
 
 		} else {
-			printk("[GRR_LOADBALANCER] p is NULL\n");
+			trace_printk("[GRR_LOADBALANCER] p is NULL\n");
 		}
 
 		double_rq_unlock(lightly_loaded_rq,

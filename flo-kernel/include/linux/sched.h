@@ -1263,7 +1263,6 @@ struct sched_grr_entity {
 	struct rb_node		run_node;
 	struct list_head	group_node;
 	unsigned int		on_rq;
-#endif
 	u64			exec_start;
 	u64			sum_exec_runtime;
 	//u64			vruntime;
@@ -1273,6 +1272,7 @@ struct sched_grr_entity {
 
 #ifdef CONFIG_SCHEDSTATS
 	struct sched_statistics statistics;
+#endif
 #endif
 
 	//for debugging

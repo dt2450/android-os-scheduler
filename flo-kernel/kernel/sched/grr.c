@@ -7,6 +7,8 @@
  *
  */
 
+#define PART_I_ONLY 0
+
 static atomic_t load_balance_time_slice;
 
 static char group_path[PATH_MAX];
@@ -135,19 +137,20 @@ select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 	tg_str = get_tg_str(p);
 	len = strlen(tg_str);
 	if (len <= 5) {
-		trace_printk("select_task_rq_grr: FG task: %s : %d\n", tg_str, p->pid);
+		//trace_printk("select_task_rq_grr: FG task: %s : %d\n", tg_str, p->pid);
 		cpu_mask = fg_cpu_mask;
 	} else {
-		trace_printk("select_task_rq_grr: BG task: %s : %d\n", tg_str, p->pid);
+		//trace_printk("select_task_rq_grr: BG task: %s : %d\n", tg_str, p->pid);
 		cpu_mask = bg_cpu_mask;
 	}
 	//for part 1 iv)
-	//cpu_mask = -1;
+	if (PART_I_ONLY)
+		cpu_mask = -1;
 	rcu_read_lock();
 	for_each_online_cpu(curr_cpu) {
 		struct rq *rq = cpu_rq(curr_cpu);
-		trace_printk("No. of tasks on CPU %d = %d\n",
-				curr_cpu, rq->grr.grr_nr_running);
+		//trace_printk("No. of tasks on CPU %d = %d\n",
+		//		curr_cpu, rq->grr.grr_nr_running);
 		if (cpu_mask & 1<<curr_cpu) {
 			if (rq->grr.grr_nr_running < min_q_len) {
 				min_q_len = rq->grr.grr_nr_running;
@@ -162,7 +165,26 @@ select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 
 
 
+static void migrate_task(struct rq *dst_rq, struct rq *src_rq, int dst_cpu)
+{
+	unsigned long flags;
+	struct task_struct *p = NULL;
+	
+	local_irq_save(flags);
+	double_rq_lock(dst_rq, src_rq);
 
+	p = get_first_migrateable_task(src_rq, dst_cpu);
+	if (p) {
+		move_task(src_rq, dst_rq, p,
+				dst_cpu);
+		trace_printk("[MIGRATE_TASK] moving pid %d to cpu[%d]--2\n", p->pid, dst_cpu);
+
+	} else {
+		trace_printk("[MIGRATE_TASK] p is NULL\n");
+	}
+	double_rq_unlock(dst_rq, src_rq);
+	local_irq_restore(flags);
+}
 
 /*
  * This function will rebalance the various queues as per the policy 
@@ -187,8 +209,6 @@ static void rebal_group(int cpu_mask)
 	//struct grr_rq *heavily_loaded_grr_rq, *lightly_loaded_grr_rq;
 	struct rq *heavily_loaded_rq, *lightly_loaded_rq;
 	//struct sched_grr_entity *grr_se;
-	struct task_struct *p;
-	unsigned long flags;
 	heavily_loaded_rq = lightly_loaded_rq =  NULL;
 	//heavily_loaded_grr_rq = lightly_loaded_grr_rq = NULL;
 	max_proc_on_run_q = 0;
@@ -229,31 +249,62 @@ static void rebal_group(int cpu_mask)
 	if ((max_proc_on_run_q - min_proc_on_run_q) > 1){
 		/*lock both run queues*/
 		//printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--1\n", heavy_cpu, light_cpu);
-		local_irq_save(flags);
-		double_rq_lock(lightly_loaded_rq, heavily_loaded_rq);
-		
-		p = get_first_migrateable_task(heavily_loaded_rq, light_cpu);
-		if (p) {
-			move_task(heavily_loaded_rq, lightly_loaded_rq, p,
-					light_cpu);
-			trace_printk("[GRR_LOADBALANCER] moving pid %d from cpu[%d] to cpu[%d]--2\n", p->pid, heavy_cpu, light_cpu);
+		migrate_task(lightly_loaded_rq, heavily_loaded_rq, light_cpu);
 
-		} else {
-			trace_printk("[GRR_LOADBALANCER] p is NULL\n");
-		}
-
-		double_rq_unlock(lightly_loaded_rq,
-				heavily_loaded_rq);
-		local_irq_restore(flags);
 	}
 }
 
+static void steal_from_another_cpu(struct softirq_action *h)
+{
+	struct rq *rq = this_rq();
+	struct grr_rq *grr_rq = &rq->grr;
+	struct rq *stolen_rq = NULL;
+	int cpu, i;
+	int cpu_mask = -1;
+
+	/* steal from another CPU */
+	trace_printk("[cpu %d] Going to steal\n", smp_processor_id());
+	/*rcu_read_lock();
+	cpu = cpu_of(rq);
+	if (fg_cpu_mask & (1<<cpu))
+		cpu_mask = fg_cpu_mask;
+	else
+		cpu_mask = bg_cpu_mask;
+	for_each_online_cpu(i) {
+		trace_printk("Online CPU: %d\n", i);
+		if (cpu_mask & 1<<i) {
+			if (i != cpu) {
+				stolen_rq = cpu_rq(i);
+				grr_rq = &stolen_rq->grr;
+				if (!grr_rq->grr_nr_running) {
+					//trace_printk("pick_next_task_grr: Stolen one is also empty\n");
+				} else {
+					trace_printk("pick_next_task_grr: stealing from cpu %d\n", i);
+					rcu_read_unlock();
+					migrate_task(rq, stolen_rq, cpu);
+					return;
+				}
+			}
+			else {
+				//	trace_printk("pick_next_task_grr: i == cpu, do nothing\n");
+			}
+		}
+	}
+	rcu_read_unlock();
+	*/
+}
 
 
 static void rebalance(struct softirq_action *h)
 {
-	rebal_group(fg_cpu_mask);
-	rebal_group(bg_cpu_mask);
+
+	if(PART_I_ONLY) {
+		/* treat all CPUs as same */
+		rebal_group(-1);
+	} else {
+		rebal_group(fg_cpu_mask);
+		rebal_group(bg_cpu_mask);
+	}
 }
 
 void get_cpu_masks(int *fg_mask, int *bg_mask)
@@ -269,11 +320,19 @@ void set_cpu_masks(int fg_mask, int bg_mask){
 
 __init void init_sched_grr_class(void)
 {
-	fg_cpu_mask = 0x3;
-	bg_cpu_mask = 0xC;
+	int num_cpus = nr_cpu_ids;
+	int fg_cpus = num_cpus/2;
+	int bg_cpus = num_cpus - fg_cpus;
+
+	fg_cpu_mask = ((1<<fg_cpus)-1);
+	bg_cpu_mask = ((1<<bg_cpus)-1);
+	bg_cpu_mask = (bg_cpu_mask << fg_cpus);
+
+	trace_printk("fg_cpu_mask = %d, bg_cpu_mask = %d\n");
 
 	atomic_set(&load_balance_time_slice,GRR_LOAD_BALANCE_TIMESLICE);
         open_softirq(SCHED_GRR_SOFTIRQ, rebalance);
+        open_softirq(SCHED_GRR_STEAL_SOFTIRQ, steal_from_another_cpu);
 
 }
 #else
@@ -353,6 +412,8 @@ static void check_preempt_curr_grr(struct rq *rq, struct task_struct *p,
 	//TODO: we don't have priority based scheduling
 	//resched_task(rq->curr);
 }
+
+
 /*This function will pick the task of the head of the queue
 and make this start running this task
 NOTE: put_prev_task is always called before this function- since
@@ -364,13 +425,26 @@ static struct task_struct *pick_next_task_grr(struct rq *rq)
 	struct task_struct *p;
 	struct grr_rq *grr_rq = &rq->grr;
 	struct sched_grr_entity *grr_se;
-
+	
 	//if (++ccc%1000 == 0)
 	//printk(KERN_ERR "[cpu %d]pick_next_task_grr: 1. called!\n",
 	//smp_processor_id());
 
-	if (!grr_rq->grr_nr_running)
+	if (!grr_rq->grr_nr_running) {
+		if (PART_I_ONLY)
+			return NULL;
+#ifdef CONFIG_SMP
+		/* raise softirq for stealing from another CPU */
+		//for debugging
+		/*printk("Going to raise steal softirq\n");
+		raw_spin_lock(&rq->lock);
+		printk("2. Going to raise steal softirq\n");
+		raise_softirq(SCHED_GRR_STEAL_SOFTIRQ);
+		raw_spin_unlock(&rq->lock);
+		*/
+#endif
 		return NULL;
+	}
 
 	//printk(KERN_ERR "[cpu %d]pick_next_task_grr: 2. called!\n",
 	//smp_processor_id());
@@ -378,7 +452,7 @@ static struct task_struct *pick_next_task_grr(struct rq *rq)
 	BUG_ON(!grr_se);
 
 	p = grr_task_of(grr_se);
-	p->grre.exec_start = rq->clock_task;
+	//p->grre.exec_start = rq->clock_task;
 	return p;
 }
 
@@ -551,7 +625,7 @@ static void task_tick_grr(struct rq *rq, struct task_struct *p, int queued)
 		}
 	}
 
-	#ifdef CONFIG_SMP
+#ifdef CONFIG_SMP
 	atomic_dec(&load_balance_time_slice);
 	
 	if(!atomic_read(&load_balance_time_slice)){
@@ -559,7 +633,7 @@ static void task_tick_grr(struct rq *rq, struct task_struct *p, int queued)
 		raise_softirq(SCHED_GRR_SOFTIRQ);				
 	}
 //	printk(KERN_ERR "[cpu %d]Done..\n", smp_processor_id());
-	#endif /* SMP */
+#endif /* SMP */
 
 }
 
@@ -572,7 +646,7 @@ static void set_curr_task_grr(struct rq *rq)
 
 	//printk(KERN_ERR "[cpu %d]set_curr_task_grr: called!!\n",
 	//		smp_processor_id());
-	p->grre.exec_start = rq->clock_task;
+	//p->grre.exec_start = rq->clock_task;
 	grr_rq->curr = grr_se;
 	//printk("[cpu %d]set_curr_task_grr: grr_rq: %x, grr_rq->curr: %x, rq->curr: %x\n", smp_processor_id(), grr_rq, grr_rq->curr, rq->curr);
 }

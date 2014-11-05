@@ -432,10 +432,10 @@ enum
 	TASKLET_SOFTIRQ,
 	SCHED_SOFTIRQ,
 	HRTIMER_SOFTIRQ,
+	SCHED_GRR_SOFTIRQ,
+	SCHED_GRR_STEAL_SOFTIRQ,
 	RCU_SOFTIRQ,    /* Preferable RCU should always be the last softirq */
-
-	NR_SOFTIRQS,
-	SCHED_GRR_SOFTIRQ
+	NR_SOFTIRQS
 };
 
 /* map softirq index to softirq name. update 'softirq_to_name' in

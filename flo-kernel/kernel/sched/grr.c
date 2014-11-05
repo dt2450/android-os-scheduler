@@ -99,6 +99,30 @@ static void move_task(struct rq *src_rq, struct rq *dst_rq,
 			p->pid, src_rq->cpu, dst_cpu);
 }
 
+
+/*this function will move all the tasks on the source cpu
+to the destination cpu
+this is generally done while assigning a cpu to one
+group*/
+int move_cpu_group(int source_cpu, int dest_cpu){
+	unsigned long flags = 0;
+	struct rq *src_rq = cpu_rq(source_cpu);
+	struct rq *dest_rq = cpu_rq(dest_cpu);
+	struct task_struct *task_to_move;
+	task_to_move = get_first_migrateable_task(src_rq, dest_cpu);
+	while(task_to_move != NULL) {
+		local_irq_save(flags);
+		double_rq_lock(src_rq, dest_rq);
+		trace_printk("[move_cpu_group]: moving task from");
+		trace_printk("cpu[%d] to cpu[%d]", source_cpu, dest_cpu);
+		move_task(src_rq, dest_rq, task_to_move, dest_cpu);
+		double_rq_unlock(src_rq, dest_rq);
+		local_irq_restore(flags);
+		task_to_move = get_first_migrateable_task(src_rq, dest_cpu);
+	}
+	return 1;
+}
+
 static void task_move_group_grr(struct task_struct *p, int on_rq)
 {
 	trace_printk("task_move_group_grr: Task group is %s for pid %d\n",
@@ -689,28 +713,6 @@ void print_grr_stats(struct seq_file *m, int cpu)
 	rcu_read_unlock();
 }
 
-/*this function will move all the tasks on the source cpu
-to the destination cpu
-this is generally done while assigning a cpu to one
-group*/
-int move_cpu_group(int source_cpu, int dest_cpu){
-	unsigned long flags = 0;
-	struct rq *src_rq = cpu_rq(source_cpu);
-	struct rq *dest_rq = cpu_rq(dest_cpu);
-	struct task_struct *task_to_move;
-	task_to_move = get_first_migrateable_task(src_rq, dest_cpu);
-	while(task_to_move != NULL) {
-		local_irq_save(flags);
-		double_rq_lock(src_rq, dest_rq);
-		trace_printk("[move_cpu_group]: moving task from");
-		trace_printk("cpu[%d] to cpu[%d]", source_cpu, dest_cpu);
-		move_task(src_rq, dest_rq, task_to_move, dest_cpu);
-		double_rq_unlock(src_rq, dest_rq);
-		local_irq_restore(flags);
-		task_to_move = get_first_migrateable_task(src_rq, dest_cpu);
-	}
-	return 1;
-}
 /*
  * Simple, special scheduling class for the per-CPU idle tasks:
  */

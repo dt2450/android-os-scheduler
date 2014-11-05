@@ -133,14 +133,15 @@ select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 	int cpu_mask = 0;
 	//printk(KERN_ERR "[cpu %d]select_task_rq_grr: called!\n",
 	//		smp_processor_id());
+	trace_printk("nr_cpu_ids = %d\n", nr_cpu_ids);
 
 	tg_str = get_tg_str(p);
 	len = strlen(tg_str);
 	if (len <= 5) {
-		trace_printk("select_task_rq_grr: FG task: %s : %d\n", tg_str, p->pid);
+		//trace_printk("select_task_rq_grr: FG task: %s : %d\n", tg_str, p->pid);
 		cpu_mask = fg_cpu_mask;
 	} else {
-		trace_printk("select_task_rq_grr: BG task: %s : %d\n", tg_str, p->pid);
+		//trace_printk("select_task_rq_grr: BG task: %s : %d\n", tg_str, p->pid);
 		cpu_mask = bg_cpu_mask;
 	}
 	//for part 1 iv)
@@ -149,8 +150,8 @@ select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 	rcu_read_lock();
 	for_each_online_cpu(curr_cpu) {
 		struct rq *rq = cpu_rq(curr_cpu);
-		trace_printk("No. of tasks on CPU %d = %d\n",
-				curr_cpu, rq->grr.grr_nr_running);
+		//trace_printk("No. of tasks on CPU %d = %d\n",
+		//		curr_cpu, rq->grr.grr_nr_running);
 		if (cpu_mask & 1<<curr_cpu) {
 			if (rq->grr.grr_nr_running < min_q_len) {
 				min_q_len = rq->grr.grr_nr_running;
@@ -366,13 +367,45 @@ static struct task_struct *pick_next_task_grr(struct rq *rq)
 	struct task_struct *p;
 	struct grr_rq *grr_rq = &rq->grr;
 	struct sched_grr_entity *grr_se;
-
+	struct rq *stolen_rq = NULL;
+	int cpu, i;
+	int cpu_mask = -1;
 	//if (++ccc%1000 == 0)
 	//printk(KERN_ERR "[cpu %d]pick_next_task_grr: 1. called!\n",
 	//smp_processor_id());
 
-	if (!grr_rq->grr_nr_running)
+	if (!grr_rq->grr_nr_running) {
+		//if (PART_I_ONLY)
+			return NULL;
+		/* steal from another CPU */
+		rcu_read_lock();
+		trace_printk("[cpu %d] Going to steal\n", smp_processor_id());
+		cpu = cpu_of(rq);
+		if (fg_cpu_mask & (1<<cpu))
+			cpu_mask = fg_cpu_mask;
+		else
+			cpu_mask = bg_cpu_mask;
+		for_each_online_cpu(i) {
+			if (cpu_mask & 1<<i) {
+				if (i != cpu) {
+					stolen_rq = cpu_rq(i);
+					grr_rq = &stolen_rq->grr;
+					if (!grr_rq->grr_nr_running) {
+						printk("pick_next_task_grr: Stolen one is also empty\n");
+					} else {
+						printk("pick_next_task_grr: stealing from cpu %d\n", i);
+						migrate_task(rq, stolen_rq, cpu);
+						rcu_read_unlock();
+						return NULL;
+					}
+				}
+				else
+					printk("pick_next_task_grr: i == cpu, do nothing\n");
+			}
+		}
+		rcu_read_unlock();
 		return NULL;
+	}
 
 	//printk(KERN_ERR "[cpu %d]pick_next_task_grr: 2. called!\n",
 	//smp_processor_id());

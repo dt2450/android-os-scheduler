@@ -4949,11 +4949,11 @@ SYSCALL_DEFINE2(sched_set_CPUgroup, int, numCPU, int, group)
 	}
 	if (group!=FOREGROUND && group!=BACKGROUND){
 		pr_err("[sched_set_CPUgroup]: numCPU:%d, group:%d\n", numCPU, group);
-		return -EFAULT;
+		return -EINVAL;
 	}
 	if (numCPU > nr_cpu_ids-1 || numCPU == 0) {
 		pr_err("[sched_set_CPUgroup]: numCPU:%d, group:%d\n", numCPU, group);
-		return -EFAULT;
+		return -EINVAL;
 	}
 
 	get_cpu_masks(&fg_mask, &bg_mask);

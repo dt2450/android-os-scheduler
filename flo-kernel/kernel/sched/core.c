@@ -4945,7 +4945,7 @@ SYSCALL_DEFINE2(sched_set_CPUgroup, int, numCPU, int, group)
 	if(nr_cpu_ids == 1){
 		pr_err("[sched_set_CPUgroup]:cannot specifically set a cpu to a given group");
 		pr_err(" in a non smp system\n");
-		return -EFAULT;
+		return -EACCES;
 	}
 	if (group!=FOREGROUND && group!=BACKGROUND){
 		pr_err("[sched_set_CPUgroup]: numCPU:%d, group:%d\n", numCPU, group);
@@ -5000,8 +5000,8 @@ SYSCALL_DEFINE2(sched_set_CPUgroup, int, numCPU, int, group)
 			number_cpus_needed+=1;
 		}
 	}
-//	if (return_value == 1)
-//		set_cpu_masks(fg_mask,bg_mask);
+	if (return_value == 1)
+		set_cpu_masks(fg_mask,bg_mask);
 	return return_value;
 }
 

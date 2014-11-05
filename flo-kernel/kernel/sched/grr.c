@@ -84,8 +84,8 @@ static struct task_struct *get_first_migrateable_task(struct rq *rq, int dst_cpu
 
 #ifdef CONFIG_SMP
 
-static int fg_cpu_mask = 0;
-static int bg_cpu_mask = 0;
+static atomic_t fg_cpu_mask;
+static atomic_t bg_cpu_mask;
 
 static void move_task(struct rq *src_rq, struct rq *dst_rq,
 		struct task_struct *p, int dst_cpu)
@@ -138,10 +138,10 @@ select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 	len = strlen(tg_str);
 	if (len <= 5) {
 		//trace_printk("select_task_rq_grr: FG task: %s : %d\n", tg_str, p->pid);
-		cpu_mask = fg_cpu_mask;
+		cpu_mask = atomic_read(&fg_cpu_mask);
 	} else {
 		//trace_printk("select_task_rq_grr: BG task: %s : %d\n", tg_str, p->pid);
-		cpu_mask = bg_cpu_mask;
+		cpu_mask = atomic_read(&bg_cpu_mask);
 	}
 	//for part 1 iv)
 	if (PART_I_ONLY)
@@ -302,20 +302,20 @@ static void rebalance(struct softirq_action *h)
 		/* treat all CPUs as same */
 		rebal_group(-1);
 	} else {
-		rebal_group(fg_cpu_mask);
-		rebal_group(bg_cpu_mask);
+		rebal_group(atomic_read(&fg_cpu_mask));
+		rebal_group(atomic_read(&bg_cpu_mask));
 	}
 }
 
 void get_cpu_masks(int *fg_mask, int *bg_mask)
 {
-	*fg_mask = fg_cpu_mask;
-	*bg_mask = bg_cpu_mask;
+	*fg_mask = atomic_read(&fg_cpu_mask);
+	*bg_mask = atomic_read(&bg_cpu_mask);
 }
 
 void set_cpu_masks(int fg_mask, int bg_mask){
-	fg_cpu_mask = fg_mask;
-	bg_cpu_mask = bg_mask;	
+	atomic_set(&fg_cpu_mask, fg_mask);
+	atomic_set(&bg_cpu_mask, bg_mask);	
 }
 
 __init void init_sched_grr_class(void)
@@ -323,12 +323,12 @@ __init void init_sched_grr_class(void)
 	int num_cpus = nr_cpu_ids;
 	int fg_cpus = num_cpus/2;
 	int bg_cpus = num_cpus - fg_cpus;
+	int int_bg_cpu_mask = 0;
+	
+	atomic_set(&fg_cpu_mask, ((1<<fg_cpus)-1));
+	int_bg_cpu_mask = ((1<<bg_cpus)-1);
+	atomic_set(&bg_cpu_mask, (int_bg_cpu_mask << fg_cpus));
 
-	fg_cpu_mask = ((1<<fg_cpus)-1);
-	bg_cpu_mask = ((1<<bg_cpus)-1);
-	bg_cpu_mask = (bg_cpu_mask << fg_cpus);
-
-	trace_printk("fg_cpu_mask = %d, bg_cpu_mask = %d\n");
 
 	atomic_set(&load_balance_time_slice,GRR_LOAD_BALANCE_TIMESLICE);
         open_softirq(SCHED_GRR_SOFTIRQ, rebalance);

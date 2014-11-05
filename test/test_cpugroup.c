@@ -38,5 +38,7 @@ int main(int argc, char **argv)
         printf("Ret: %d\n", ret);
         if(ret == -1)
                 printf("error is: %s\n", strerror(errno));
+	
+	return ret;
 }
 

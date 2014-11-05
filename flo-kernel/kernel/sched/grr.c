@@ -256,6 +256,17 @@ static void rebalance(struct softirq_action *h)
 	rebal_group(bg_cpu_mask);
 }
 
+void get_cpu_masks(int *fg_mask, int *bg_mask)
+{
+	*fg_mask = fg_cpu_mask;
+	*bg_mask = bg_cpu_mask;
+}
+
+void set_cpu_masks(int fg_mask, int bg_mask){
+	fg_cpu_mask = fg_mask;
+	bg_cpu_mask = bg_mask;	
+}
+
 __init void init_sched_grr_class(void)
 {
 	fg_cpu_mask = 0x3;
@@ -604,7 +615,24 @@ void print_grr_stats(struct seq_file *m, int cpu)
 	rcu_read_unlock();
 }
 
-
+/*this function will move all the tasks on the source cpu
+to the destination cpu
+this is generally done while assigning a cpu to one
+group*/
+int move_cpu_group(int source_cpu, int dest_cpu){
+	/*struct rq *src_rq = cpu_rq(source_cpu);
+	struct rq *dest_rq = cpu_rq(dest_cpu);
+	task_struct task_to_move = get_first_migrateable_task(src_rq, dest_cpu);
+	while(task_to_move != NULL) {
+		local_irq_save(flags);
+		double_rq_lock(src_rq, dest_rq);
+		move_task(src_rq, dest_rq, task_to_move, dest_cpu);
+		double_rq_unlock(src_rq, dest_rq);
+		local_irq_restore(flags);
+		task_to_move = get_first_migrateable_task(src_rq, dest_rq);
+	}*/
+	return 1;
+}
 /*
  * Simple, special scheduling class for the per-CPU idle tasks:
  */

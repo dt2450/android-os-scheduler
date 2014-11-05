@@ -72,7 +72,7 @@
 #include <linux/slab.h>
 #include <linux/init_task.h>
 #include <linux/binfmts.h>
-
+#include <linux/cpumask.h>
 #include <asm/switch_to.h>
 #include <asm/tlb.h>
 #include <asm/irq_regs.h>
@@ -84,6 +84,9 @@
 #include <linux/sched.h>
 #include "sched.h"
 #include "../workqueue_sched.h"
+
+#define FOREGROUND 1
+#define BACKGROUND 2
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/sched.h>
@@ -4873,32 +4876,133 @@ out_unlock:
 	return retval;
 }
 
-/* This system call will assign numCPU to the given group,
+static int get_count_of_mask_bits(int cpu_mask){
+	int i=0;
+	int count = 0;
+	for(;i<nr_cpu_ids;i++){
+		if((cpu_mask & 1<<i) >0)
+			count+=1;
+	}
+	return count;
+}
+
+static void get_lsb_from_mask(int cpu_group_mask, int *bit_position, int *lsb){
+	int i=nr_cpu_ids-1;
+	int temp;
+	for(; i >= 0; i--){
+		temp = 1<<i;
+		if ((cpu_group_mask & temp) > 0) {
+			*lsb = temp;
+			*bit_position = i;
+		}
+	}
+}
+/*will return the most significant set bit from the cpu group mask*/
+static void get_msb_from_mask(int cpu_group_mask, int *bit_position, int *msb){
+	int i=0;
+	int temp;
+	for(; i < nr_cpu_ids; i++){
+		temp = 1<<i;
+		if((cpu_group_mask & temp) > 0){
+			*msb = temp;
+			*bit_position = i;
+		}
+	}
+}
+
+	
+
+ 
+
+/* This system call will assign numCPU[total number of cpus] to the given group,
  * and assign (totalCPU - numCPU) to the other group.
  * System call number 378.
 */
 SYSCALL_DEFINE2(sched_set_CPUgroup, int, numCPU, int, group)
 {
-	struct sched_param param;
-	int result = 0;
-	int current_policy = 0;
-	param.sched_priority = 0;
-	//This implementation needs to be replaced. Below code is only
-	//for current testing and not meant to be here
-	pr_err("sched_set_CPUgroup: numCPU=%d, group=%d\n", numCPU, group);
-	current_policy = sys_sched_getscheduler(sys_getpid());
-	pr_err("sched_set_CPUgroup: current policy is %d\n", current_policy);
+	int uid;
+	int fg_mask, bg_mask, count;
+	int number_cpus_needed;
+	int msb, bit_position, lsb;
+	int max_bits_set = (1<<(nr_cpu_ids))-1;
+	int return_value;
+	/*Checking if user is root*/
 	read_lock(&tasklist_lock);
-	result = sched_setscheduler(current, SCHED_GRR,
-			(const struct sched_param *)&param);
-	pr_err("grr class = 0x%x current class = 0x%x, fair class = 0x%x\n",
-			&grr_sched_class, current->sched_class,
-			&fair_sched_class);
-	read_unlock(&tasklist_lock);
-	current_policy = sys_sched_getscheduler(sys_getpid());
-	pr_err("sched_set_CPUgroup: new policy is %d\n", current_policy);
+	if (current == NULL || current->real_cred == NULL) {
+		pr_err("[sched_set_CPUgroup]: current task is invalid\n");
+		read_unlock(&tasklist_lock);
+		return -EFAULT;
+	}
 
-	return result;
+	uid = current->real_cred->uid;
+	read_unlock(&tasklist_lock);
+
+	if (uid != 0) {
+		pr_err("[sched_set_CPUgroup]: called by non-root user !!\n");
+		return -EACCES;
+	}
+
+	if(nr_cpu_ids == 1){
+		pr_err("[sched_set_CPUgroup]:cannot specifically set a cpu to a given group");
+		pr_err(" in a non smp system\n");
+		return -EFAULT;
+	}
+	if (group!=FOREGROUND && group!=BACKGROUND){
+		pr_err("[sched_set_CPUgroup]: numCPU:%d, group:%d\n", numCPU, group);
+		return -EFAULT;
+	}
+	if (numCPU > nr_cpu_ids-1 || numCPU == 0) {
+		pr_err("[sched_set_CPUgroup]: numCPU:%d, group:%d\n", numCPU, group);
+		return -EFAULT;
+	}
+
+	get_cpu_masks(&fg_mask, &bg_mask);
+	if (group == FOREGROUND)
+		count = get_count_of_mask_bits(fg_mask);
+	else
+		count = get_count_of_mask_bits(bg_mask);	
+	
+	number_cpus_needed = numCPU - count;
+	if(number_cpus_needed == 0) 
+		return 1;
+
+	if(number_cpus_needed > 0) {
+		number_cpus_needed = -number_cpus_needed;
+		if (group == FOREGROUND)
+			group = BACKGROUND;
+		else
+			group = FOREGROUND;
+	}
+
+	if (group == FOREGROUND) {
+		//transfer from foreground to background
+		while(number_cpus_needed!=0){
+			get_msb_from_mask(fg_mask, &bit_position, &msb);
+			fg_mask = fg_mask & (max_bits_set-msb);
+			bg_mask = bg_mask | msb;
+			printk("[sched_set_CPUgroup] fg_mask:%d, bg_mask: %d, msb:%d",
+				fg_mask, bg_mask, msb);
+			printk(" bit_position:%d\n", bit_position);
+			return_value = move_cpu_group(bit_position, nr_cpu_ids-1);
+			//TODO: implement move_cpu_group
+			number_cpus_needed+=1;
+		}
+	} else {
+		//transfer from background to foreground
+		while(number_cpus_needed!=0){
+			get_lsb_from_mask(bg_mask, &bit_position, &lsb);
+			bg_mask = bg_mask & (max_bits_set-lsb);
+			fg_mask = fg_mask | lsb;
+			printk("[sched_set_CPUgroup] fg_mask:%d, bg_mask: %d, msb:%d",
+				fg_mask, bg_mask, msb);
+			printk(" bit_position:%d\n", bit_position);
+			return_value = move_cpu_group(bit_position, 0);	
+			number_cpus_needed+=1;
+		}
+	}
+//	if (return_value == 1)
+//		set_cpu_masks(fg_mask,bg_mask);
+	return return_value;
 }
 
 static const char stat_nam[] = TASK_STATE_TO_CHAR_STR;

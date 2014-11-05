@@ -951,6 +951,11 @@ extern void init_rt_bandwidth(struct rt_bandwidth *rt_b, u64 period, u64 runtime
 
 extern void update_cpu_load(struct rq *this_rq);
 
+/*GRR_EXTERNS_FOR_SYS_CALL START*/
+extern void get_cpu_masks(int *fg_mask, int *bg_mask);
+extern void set_cpu_masks(int fg_mask, int bg_mask);
+extern int move_cpu_group(int source_cpu, int dest_cpu);
+/*GRR_EXTERNS_FOR_SYS_CALL END*/
 #ifdef CONFIG_CGROUP_CPUACCT
 #include <linux/cgroup.h>
 /* track cpu usage of a group of tasks and its child groups */

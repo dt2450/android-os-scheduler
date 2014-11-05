@@ -694,17 +694,21 @@ to the destination cpu
 this is generally done while assigning a cpu to one
 group*/
 int move_cpu_group(int source_cpu, int dest_cpu){
-	/*struct rq *src_rq = cpu_rq(source_cpu);
+	unsigned long flags = 0;
+	struct rq *src_rq = cpu_rq(source_cpu);
 	struct rq *dest_rq = cpu_rq(dest_cpu);
-	task_struct task_to_move = get_first_migrateable_task(src_rq, dest_cpu);
+	struct task_struct *task_to_move;
+	task_to_move = get_first_migrateable_task(src_rq, dest_cpu);
 	while(task_to_move != NULL) {
 		local_irq_save(flags);
 		double_rq_lock(src_rq, dest_rq);
+		trace_printk("[move_cpu_group]: moving task from");
+		trace_printk("cpu[%d] to cpu[%d]", source_cpu, dest_cpu);
 		move_task(src_rq, dest_rq, task_to_move, dest_cpu);
 		double_rq_unlock(src_rq, dest_rq);
 		local_irq_restore(flags);
-		task_to_move = get_first_migrateable_task(src_rq, dest_rq);
-	}*/
+		task_to_move = get_first_migrateable_task(src_rq, dest_cpu);
+	}
 	return 1;
 }
 /*

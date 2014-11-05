@@ -4993,8 +4993,8 @@ SYSCALL_DEFINE2(sched_set_CPUgroup, int, numCPU, int, group)
 			get_lsb_from_mask(bg_mask, &bit_position, &lsb);
 			bg_mask = bg_mask & (max_bits_set-lsb);
 			fg_mask = fg_mask | lsb;
-			printk("[sched_set_CPUgroup] fg_mask:%d, bg_mask: %d, msb:%d",
-				fg_mask, bg_mask, msb);
+			printk("[sched_set_CPUgroup] fg_mask:%d, bg_mask: %d, lsb:%d",
+				fg_mask, bg_mask, lsb);
 			printk(" bit_position:%d\n", bit_position);
 			return_value = move_cpu_group(bit_position, 0);	
 			number_cpus_needed+=1;

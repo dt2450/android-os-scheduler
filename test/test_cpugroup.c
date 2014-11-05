@@ -24,13 +24,13 @@ int main(int argc, char **argv)
                 printf("error is: %s\n", strerror(errno));
 
 	
-        ret = syscall(__NR_sched_set_CPUgroup, 3, 1);
-        printf("Ret: %d\n", ret);
-        if(ret == -1)
-                printf("error is: %s\n", strerror(errno));
 
 	
         ret = syscall(__NR_sched_set_CPUgroup, 3, 2);
+        printf("Ret: %d\n", ret);
+        if(ret == -1)
+                printf("error is: %s\n", strerror(errno));
+        ret = syscall(__NR_sched_set_CPUgroup, 3, 1);
         printf("Ret: %d\n", ret);
         if(ret == -1)
                 printf("error is: %s\n", strerror(errno));

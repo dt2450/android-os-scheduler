@@ -105,11 +105,15 @@ to the destination cpu
 this is generally done while assigning a cpu to one
 group*/
 int move_cpu_group(int source_cpu, int dest_cpu){
+	trace_printk("[move_cpu_group]: entered\n");
 	unsigned long flags = 0;
 	struct rq *src_rq = cpu_rq(source_cpu);
 	struct rq *dest_rq = cpu_rq(dest_cpu);
 	struct task_struct *task_to_move;
 	task_to_move = get_first_migrateable_task(src_rq, dest_cpu);
+	if(task_to_move == NULL)
+		trace_printk("[move_cpu_group]: no tasks found on cpu[%d]", source_cpu);
+
 	while(task_to_move != NULL) {
 		local_irq_save(flags);
 		double_rq_lock(src_rq, dest_rq);
@@ -120,6 +124,7 @@ int move_cpu_group(int source_cpu, int dest_cpu){
 		local_irq_restore(flags);
 		task_to_move = get_first_migrateable_task(src_rq, dest_cpu);
 	}
+	trace_printk("[move_cpu_group]: completed\n");
 	return 1;
 }
 

@@ -117,7 +117,7 @@ static void task_move_group_grr(struct task_struct *p, int on_rq)
 				p->pid, task_cpu(p));
 	}
 	*/
-	set_task_rq(p, task_cpu(p));
+	//set_task_rq(p, task_cpu(p));
 
 }
 

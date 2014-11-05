@@ -163,7 +163,26 @@ select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 	return min_cpu;
 }
 
+static void migrate_task(struct rq *src_rq, struct rq *dst_rq, int dst_cpu)
+{
+	unsigned long flags;
 
+	local_irq_save(flags);
+	double_rq_lock(dst_rq, src_rq);
+
+	p = get_first_migrateable_task(src_rq, dst_cpu);
+	if (p) {
+		move_task(src_rq, dst_rq, p, dst_cpu);
+		trace_printk("[MIGRATE_TASK] Moved pid %d to cpu[%d]\n", p->pid, dst_cpu);
+
+	} else {
+		trace_printk("[MIGRATE_TASK] p is NULL\n");
+	}
+
+	double_rq_unlock(lightly_loaded_rq,
+			heavily_loaded_rq);
+	local_irq_restore(flags);
+}
 
 
 
@@ -232,22 +251,7 @@ static void rebal_group(int cpu_mask)
 	if ((max_proc_on_run_q - min_proc_on_run_q) > 1){
 		/*lock both run queues*/
 		//printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--1\n", heavy_cpu, light_cpu);
-		local_irq_save(flags);
-		double_rq_lock(lightly_loaded_rq, heavily_loaded_rq);
-		
-		p = get_first_migrateable_task(heavily_loaded_rq, light_cpu);
-		if (p) {
-			move_task(heavily_loaded_rq, lightly_loaded_rq, p,
-					light_cpu);
-			trace_printk("[GRR_LOADBALANCER] moving pid %d from cpu[%d] to cpu[%d]--2\n", p->pid, heavy_cpu, light_cpu);
-
-		} else {
-			trace_printk("[GRR_LOADBALANCER] p is NULL\n");
-		}
-
-		double_rq_unlock(lightly_loaded_rq,
-				heavily_loaded_rq);
-		local_irq_restore(flags);
+		migrate_task(lightly_loaded_rq, heavily_loaded_rq, light_cpu);
 	}
 }
 
@@ -339,18 +343,11 @@ static struct sched_grr_entity *pick_next_grr_entity(struct rq *rq,
 	return grr_se;
 }
 
-/*
- * Idle tasks are unconditionally rescheduled:
- */
-//TODO: To be implemented?
 static void check_preempt_curr_grr(struct rq *rq, struct task_struct *p,
 		int flags)
 {
-	//printk(KERN_ERR "[cpu %d]check_preempt_curr_grr: called!\n",
-	//smp_processor_id());
-	//TODO: we don't have priority based scheduling
-	//resched_task(rq->curr);
 }
+
 /*This function will pick the task of the head of the queue
 and make this start running this task
 NOTE: put_prev_task is always called before this function- since
@@ -362,13 +359,48 @@ static struct task_struct *pick_next_task_grr(struct rq *rq)
 	struct task_struct *p;
 	struct grr_rq *grr_rq = &rq->grr;
 	struct sched_grr_entity *grr_se;
+	int i = 0;
+	int cpu_mask = -1;
+	int cpu = -1;
 
 	//if (++ccc%1000 == 0)
 	//printk(KERN_ERR "[cpu %d]pick_next_task_grr: 1. called!\n",
 	//smp_processor_id());
 
-	if (!grr_rq->grr_nr_running)
+	if (!grr_rq->grr_nr_running) {
+		if (PART_I_ONLY)
+			return NULL;
 		return NULL;
+/*
+		rcu_read_lock();
+		printk("pick_next_task_grr: going to steal\n");
+		cpu = cpu_of(rq);
+		if (fg_cpu_mask & (1<<cpu))
+			cpu_mask = fg_cpu_mask;
+		else
+			cpu_mask = bg_cpu_mask;
+		for_each_online_cpu(i) {
+			if (cpu_mask & 1<<i) {
+				struct rq *stolen_rq = cpu_rq(i);
+				if (rq != stolen_rq) {
+					grr_rq = &stolen_rq->grr;
+					if (!grr_rq->grr_nr_running) {
+						printk("pick_next_task_grr: Stolen one is also empty\n");
+					} else {
+						grr_se = pick_next_grr_entity(stolen_rq, grr_rq);
+						BUG_ON(!grr_se);
+						p = grr_task_of(grr_se);
+					        p->grre.exec_start = rq->clock_task;
+						return p;
+					}
+				}
+				else
+					printk("pick_next_task_grr: stolen_rq == rq, do nothing\n");
+			}
+		}
+		rcu_read_unlock();
+*/
+	}
 
 	//printk(KERN_ERR "[cpu %d]pick_next_task_grr: 2. called!\n",
 	//smp_processor_id());

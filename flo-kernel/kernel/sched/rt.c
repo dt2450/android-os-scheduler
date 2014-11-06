@@ -1971,11 +1971,9 @@ static void watchdog(struct rq *rq, struct task_struct *p)
 	soft = task_rlimit(p, RLIMIT_RTTIME);
 	hard = task_rlimit_max(p, RLIMIT_RTTIME);
 
-	printk("watchdog: came here\n");
 	if (soft != RLIM_INFINITY) {
 		unsigned long next;
 
-		printk("watchdog: maybe triggered\n");
 		p->rt.timeout++;
 		next = DIV_ROUND_UP(min(soft, hard), USEC_PER_SEC/HZ);
 
@@ -2039,7 +2037,6 @@ static unsigned int get_rr_interval_rt(struct rq *rq, struct task_struct *task)
 }
 
 const struct sched_class rt_sched_class = {
-	//.next			= &fair_sched_class,
 	.next			= &grr_sched_class,
 	.enqueue_task		= enqueue_task_rt,
 	.dequeue_task		= dequeue_task_rt,

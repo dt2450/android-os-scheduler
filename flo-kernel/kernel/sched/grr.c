@@ -90,13 +90,15 @@ static atomic_t bg_cpu_mask;
 static void move_task(struct rq *src_rq, struct rq *dst_rq,
 		struct task_struct *p, int dst_cpu)
 {
-	trace_printk("Moving process %d from cpu %d to %d\n", p->pid,
-			src_rq->cpu, dst_cpu);
+	//if (p->pid == 21)
+	trace_printk("Moving process %d [%s] from cpu %d to %d\n", p->pid,
+			p->comm, src_rq->cpu, dst_cpu);
 	deactivate_task(src_rq, p, 0);
 	set_task_cpu(p, dst_cpu);
 	activate_task(dst_rq, p, 0);
-	trace_printk("Done Moving process %d from cpu %d to %d\n",
-			p->pid, src_rq->cpu, dst_cpu);
+	//if (p->pid == 21)
+	trace_printk("Done Moving process %d [%s] from cpu %d to %d\n",
+			p->pid, p->comm, src_rq->cpu, dst_cpu);
 }
 
 
@@ -114,24 +116,24 @@ int move_cpu_group(int source_cpu, int dest_cpu){
 	if(task_to_move == NULL)
 		trace_printk("[move_cpu_group]: no tasks found on cpu[%d]", source_cpu);
 
+	local_irq_save(flags);
+	double_rq_lock(src_rq, dest_rq);
 	while(task_to_move != NULL) {
-		local_irq_save(flags);
-		double_rq_lock(src_rq, dest_rq);
 		trace_printk("[move_cpu_group]: moving task from");
 		trace_printk("cpu[%d] to cpu[%d]", source_cpu, dest_cpu);
 		move_task(src_rq, dest_rq, task_to_move, dest_cpu);
-		double_rq_unlock(src_rq, dest_rq);
-		local_irq_restore(flags);
 		task_to_move = get_first_migrateable_task(src_rq, dest_cpu);
 	}
+	double_rq_unlock(src_rq, dest_rq);
+	local_irq_restore(flags);
 	trace_printk("[move_cpu_group]: completed\n");
 	return 1;
 }
 
 static void task_move_group_grr(struct task_struct *p, int on_rq)
 {
-	trace_printk("task_move_group_grr: Task group is %s for pid %d\n",
-			task_group_path(task_group(p)), p->pid);
+	//trace_printk("task_move_group_grr: Task group is %s for pid %d\n",
+	//		task_group_path(task_group(p)), p->pid);
 
 	//printk("task_move_group_grr: Task group: %s, pid: %d, cpu: %d\n",
 	//		task_group_path(task_group(p)), p->pid, task_cpu(p));
@@ -166,7 +168,9 @@ select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 	tg_str = get_tg_str(p);
 	len = strlen(tg_str);
 	if (len <= 5) {
-		//trace_printk("select_task_rq_grr: FG task: %s : %d\n", tg_str, p->pid);
+		//if (p->pid == 21)
+			trace_printk("select_task_rq_grr: FG task: %s : %d [%s]\n",
+					tg_str, p->pid, p->comm);
 		cpu_mask = atomic_read(&fg_cpu_mask);
 	} else {
 		//trace_printk("select_task_rq_grr: BG task: %s : %d\n", tg_str, p->pid);
@@ -188,7 +192,8 @@ select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 		}
 	}
 	rcu_read_unlock();
-	trace_printk("select_task_rq_grr: selected CPU: %d\n", min_cpu);
+	//if (p->pid == 21)
+		trace_printk("select_task_rq_grr: selected CPU: %d\n", min_cpu);
 	return min_cpu;
 }
 
@@ -198,7 +203,7 @@ static void migrate_task(struct rq *dst_rq, struct rq *src_rq, int dst_cpu)
 {
 	unsigned long flags;
 	struct task_struct *p = NULL;
-	
+
 	local_irq_save(flags);
 	double_rq_lock(dst_rq, src_rq);
 
@@ -206,7 +211,10 @@ static void migrate_task(struct rq *dst_rq, struct rq *src_rq, int dst_cpu)
 	if (p) {
 		move_task(src_rq, dst_rq, p,
 				dst_cpu);
-		trace_printk("[MIGRATE_TASK] moving pid %d to cpu[%d]--2\n", p->pid, dst_cpu);
+		//for debugging
+		//if (p->pid == 21)
+		trace_printk("[MIGRATE_TASK] moving pid %d [%s] to cpu[%d]--2\n",
+				p->pid, p->comm, dst_cpu);
 
 	} else {
 		trace_printk("[MIGRATE_TASK] p is NULL\n");
@@ -279,28 +287,31 @@ static void rebal_group(int cpu_mask)
 		/*lock both run queues*/
 		//printk("[GRR_LOADBALANCER] moving from cpu[%d] to cpu[%d]--1\n", heavy_cpu, light_cpu);
 		migrate_task(lightly_loaded_rq, heavily_loaded_rq, light_cpu);
-
 	}
 }
 
-static void steal_from_another_cpu(struct softirq_action *h)
+void steal_from_another_cpu_grr(struct rq *this_rq)
 {
-	struct rq *rq = this_rq();
+	struct rq *rq = this_rq;
 	struct grr_rq *grr_rq = &rq->grr;
 	struct rq *stolen_rq = NULL;
 	int cpu, i;
 	int cpu_mask = -1;
+	int local_fg_cpu_mask = atomic_read(&fg_cpu_mask);
+	int local_bg_cpu_mask = atomic_read(&bg_cpu_mask);
 
 	/* steal from another CPU */
 	trace_printk("[cpu %d] Going to steal\n", smp_processor_id());
-	/*rcu_read_lock();
+	raw_spin_unlock(&this_rq->lock);
+
+	rcu_read_lock();
 	cpu = cpu_of(rq);
-	if (fg_cpu_mask & (1<<cpu))
-		cpu_mask = fg_cpu_mask;
+	if (local_fg_cpu_mask & (1<<cpu))
+		cpu_mask = local_fg_cpu_mask;
 	else
-		cpu_mask = bg_cpu_mask;
+		cpu_mask = local_bg_cpu_mask;
 	for_each_online_cpu(i) {
-		trace_printk("Online CPU: %d\n", i);
+		//trace_printk("Online CPU: %d\n", i);
 		if (cpu_mask & 1<<i) {
 			if (i != cpu) {
 				stolen_rq = cpu_rq(i);
@@ -311,6 +322,7 @@ static void steal_from_another_cpu(struct softirq_action *h)
 					trace_printk("pick_next_task_grr: stealing from cpu %d\n", i);
 					rcu_read_unlock();
 					migrate_task(rq, stolen_rq, cpu);
+					raw_spin_lock(&this_rq->lock);
 					return;
 				}
 			}
@@ -320,13 +332,12 @@ static void steal_from_another_cpu(struct softirq_action *h)
 		}
 	}
 	rcu_read_unlock();
-	*/
+	raw_spin_lock(&this_rq->lock);
 }
 
 
 static void rebalance(struct softirq_action *h)
 {
-
 	if(PART_I_ONLY) {
 		/* treat all CPUs as same */
 		rebal_group(-1);
@@ -358,11 +369,8 @@ __init void init_sched_grr_class(void)
 	int_bg_cpu_mask = ((1<<bg_cpus)-1);
 	atomic_set(&bg_cpu_mask, (int_bg_cpu_mask << fg_cpus));
 
-
 	atomic_set(&load_balance_time_slice,GRR_LOAD_BALANCE_TIMESLICE);
         open_softirq(SCHED_GRR_SOFTIRQ, rebalance);
-        open_softirq(SCHED_GRR_STEAL_SOFTIRQ, steal_from_another_cpu);
-
 }
 #else
 
@@ -640,8 +648,8 @@ static void task_tick_grr(struct rq *rq, struct task_struct *p, int queued)
 	if (p->policy != SCHED_GRR)
 		return;
 
-	if (++ccc%100)
-		printlist(rq);
+	//if (++ccc%100)
+	//	printlist(rq);
 
 	if (!(--p->grre.time_slice)) {
 		//	printk(KERN_ERR "[cpu %d]+", smp_processor_id());
@@ -659,7 +667,7 @@ static void task_tick_grr(struct rq *rq, struct task_struct *p, int queued)
 	
 	if(!atomic_read(&load_balance_time_slice)){
 		atomic_set(&load_balance_time_slice, GRR_LOAD_BALANCE_TIMESLICE);
-		raise_softirq(SCHED_GRR_SOFTIRQ);				
+		raise_softirq(SCHED_GRR_SOFTIRQ);
 	}
 //	printk(KERN_ERR "[cpu %d]Done..\n", smp_processor_id());
 #endif /* SMP */

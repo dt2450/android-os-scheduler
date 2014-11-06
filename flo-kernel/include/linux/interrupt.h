@@ -433,7 +433,6 @@ enum
 	SCHED_SOFTIRQ,
 	HRTIMER_SOFTIRQ,
 	SCHED_GRR_SOFTIRQ,
-	SCHED_GRR_STEAL_SOFTIRQ,
 	RCU_SOFTIRQ,    /* Preferable RCU should always be the last softirq */
 	NR_SOFTIRQS
 };

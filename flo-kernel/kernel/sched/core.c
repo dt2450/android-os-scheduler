@@ -3243,8 +3243,10 @@ need_resched:
 
 	pre_schedule(rq, prev);
 
-	if (unlikely(!rq->nr_running))
-		idle_balance(cpu, rq);
+	if (unlikely(!rq->nr_running)) {
+		trace_printk("__schedule: no running task, going to steal ...\n");
+		steal_from_another_cpu_grr(rq);
+	}
 
 	put_prev_task(rq, prev);
 	next = pick_next_task(rq);
@@ -4923,7 +4925,7 @@ SYSCALL_DEFINE2(sched_set_CPUgroup, int, numCPU, int, group)
 	int uid;
 	int fg_mask, bg_mask, count;
 	int number_cpus_needed;
-	int msb, bit_position, lsb;
+	int msb = 0, bit_position = 0, lsb = 0;
 	int max_bits_set = (1<<(nr_cpu_ids))-1;
 	int return_value;
 	/*Checking if user is root*/
@@ -4980,11 +4982,12 @@ SYSCALL_DEFINE2(sched_set_CPUgroup, int, numCPU, int, group)
 			get_msb_from_mask(fg_mask, &bit_position, &msb);
 			fg_mask = fg_mask & (max_bits_set-msb);
 			bg_mask = bg_mask | msb;
-			printk("[sched_set_CPUgroup] fg_mask:%d, bg_mask: %d, msb:%d",
+			trace_printk("[sched_set_CPUgroup] fg_mask:%d, bg_mask: %d, msb:%d",
 				fg_mask, bg_mask, msb);
-			printk(" bit_position:%d\n", bit_position);
-			return_value = move_cpu_group(bit_position, nr_cpu_ids-1);
+			trace_printk(" bit_position:%d\n", bit_position);
+			//return_value = move_cpu_group(bit_position, nr_cpu_ids-1);
 			//TODO: implement move_cpu_group
+			return_value = 1;
 			number_cpus_needed+=1;
 		}
 	} else {
@@ -4993,10 +4996,11 @@ SYSCALL_DEFINE2(sched_set_CPUgroup, int, numCPU, int, group)
 			get_lsb_from_mask(bg_mask, &bit_position, &lsb);
 			bg_mask = bg_mask & (max_bits_set-lsb);
 			fg_mask = fg_mask | lsb;
-			printk("[sched_set_CPUgroup] fg_mask:%d, bg_mask: %d, lsb:%d",
+			trace_printk("[sched_set_CPUgroup] fg_mask:%d, bg_mask: %d, lsb:%d",
 				fg_mask, bg_mask, lsb);
-			printk(" bit_position:%d\n", bit_position);
-			return_value = move_cpu_group(bit_position, 0);	
+			trace_printk(" bit_position:%d\n", bit_position);
+			//return_value = move_cpu_group(bit_position, 0);	
+			return_value = 1;
 			number_cpus_needed+=1;
 		}
 	}

@@ -942,6 +942,7 @@ extern int update_runtime(struct notifier_block *nfb, unsigned long action, void
 extern void init_sched_rt_class(void);
 extern void init_sched_fair_class(void);
 extern void init_sched_grr_class(void);
+extern void steal_from_another_cpu_grr(struct rq *this_rq);
 
 extern void resched_task(struct task_struct *p);
 extern void resched_cpu(int cpu);

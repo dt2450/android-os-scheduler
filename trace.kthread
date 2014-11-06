@@ -1,0 +1,553 @@
+# tracer: nop
+#
+# entries-in-buffer/entries-written: 305/3400   #P:4
+#
+#                              _-----=> irqs-off
+#                             / _----=> need-resched
+#                            | / _---=> hardirq/softirq
+#                            || / _--=> preempt-depth
+#                            ||| /     delay
+#           TASK-PID   CPU#  ||||    TIMESTAMP  FUNCTION
+#              | |       |   ||||       |         |
+           <...>-1635  [003] ..s1   278.727753: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-1635  [003] ..s1   278.727753: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[1] min_proc_on_run_q:[2] cpu[0] max_proc_on_run_q[3]
+           <...>-1635  [003] ..s1   278.727753: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-1635  [003] ..s1   278.727753: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-1635  [003] ..s1   278.727753: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[3] min_proc_on_run_q:[1] cpu[2] max_proc_on_run_q[2]
+           <...>-1637  [003] ..s1   337.907715: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-1637  [003] ..s1   337.907745: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-1637  [003] ..s1   337.907745: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[0] min_proc_on_run_q:[2] cpu[1] max_proc_on_run_q[3]
+           <...>-1637  [003] ..s1   337.907745: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-1637  [003] ..s1   337.907745: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-1637  [003] ..s1   337.907745: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[2] min_proc_on_run_q:[0] cpu[3] max_proc_on_run_q[2]
+           <...>-1637  [003] d.s3   337.907745: rebal_group: [MIGRATE_TASK] p is NULL
+           <...>-1636  [003] ..s1   346.107758: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-1636  [003] ..s1   346.107758: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-1636  [003] ..s1   346.107758: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[0] min_proc_on_run_q:[0] cpu[1] max_proc_on_run_q[3]
+           <...>-1636  [003] d.s3   346.107758: rebal_group: [MIGRATE_TASK] p is NULL
+           <...>-1636  [003] ..s1   346.107758: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-1636  [003] ..s1   346.107758: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-1636  [003] ..s1   346.107758: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[2] min_proc_on_run_q:[2] cpu[2] max_proc_on_run_q[2]
+           <...>-1636  [003] ..s1   346.107788: rebal_group: [GRR_LOADBALANCER] Same CPUs id: 2
+           <...>-1636  [003] ..s1   346.277740: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-1636  [003] ..s1   346.277771: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-1636  [003] ..s1   346.277771: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[0] min_proc_on_run_q:[1] cpu[1] max_proc_on_run_q[2]
+           <...>-1636  [003] ..s1   346.277771: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-1636  [003] ..s1   346.277771: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-1636  [003] ..s1   346.277771: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[2] min_proc_on_run_q:[0] cpu[3] max_proc_on_run_q[1]
+           <...>-1632  [003] ..s1   348.037750: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-1632  [003] ..s1   348.037750: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-1632  [003] ..s1   348.037750: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[1] min_proc_on_run_q:[0] cpu[0] max_proc_on_run_q[2]
+           <...>-1632  [003] d.s3   348.037750: move_task: Moving process 152 from cpu 0 to 1
+           <...>-1632  [003] d.s3   348.037750: move_task: Done Moving process 152 from cpu 0 to 1
+           <...>-1632  [003] d.s3   348.037750: rebal_group: [MIGRATE_TASK] moving pid 152 to cpu[1]--2
+           <...>-1632  [003] ..s1   348.037750: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-1632  [003] ..s1   348.037781: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-1632  [003] ..s1   348.037781: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[2] min_proc_on_run_q:[1] cpu[3] max_proc_on_run_q[2]
+           <...>-1632  [003] ..s1   348.227753: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-1632  [003] ..s1   348.227753: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-1632  [003] ..s1   348.227753: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[0] min_proc_on_run_q:[1] cpu[0] max_proc_on_run_q[1]
+           <...>-1632  [003] ..s1   348.227753: rebal_group: [GRR_LOADBALANCER] Same CPUs id: 0
+           <...>-1632  [003] ..s1   348.227753: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-1632  [003] ..s1   348.227753: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-1632  [003] ..s1   348.227753: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[3] min_proc_on_run_q:[1] cpu[2] max_proc_on_run_q[2]
+           <...>-1634  [003] ..s1   368.617767: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-1634  [003] ..s1   368.617767: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-1634  [003] ..s1   368.617767: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[1] min_proc_on_run_q:[0] cpu[0] max_proc_on_run_q[1]
+           <...>-1634  [003] ..s1   368.617798: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-1634  [003] ..s1   368.617798: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-1634  [003] ..s1   368.617798: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[2] min_proc_on_run_q:[1] cpu[2] max_proc_on_run_q[1]
+           <...>-1634  [003] ..s1   368.617798: rebal_group: [GRR_LOADBALANCER] Same CPUs id: 2
+           <...>-2537  [003] ..s1   389.027863: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-2537  [003] ..s1   389.027863: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-2537  [003] ..s1   389.027893: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[0] min_proc_on_run_q:[0] cpu[0] max_proc_on_run_q[0]
+           <...>-2537  [003] ..s1   389.027893: rebal_group: [GRR_LOADBALANCER] Same CPUs id: 0
+           <...>-2537  [003] ..s1   389.027924: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-2537  [003] ..s1   389.027924: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-2537  [003] ..s1   389.027924: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[2] min_proc_on_run_q:[1] cpu[3] max_proc_on_run_q[2]
+##### CPU 0 buffer started ####
+           <...>-566   [000] ..s1   433.427765: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-566   [000] ..s1   433.427765: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-566   [000] ..s1   433.427765: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[2] min_proc_on_run_q:[0] cpu[0] max_proc_on_run_q[0]
+           <...>-893   [000] ..s1   435.587769: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-893   [000] ..s1   435.587769: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-893   [000] ..s1   435.587769: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[1] min_proc_on_run_q:[0] cpu[0] max_proc_on_run_q[3]
+           <...>-893   [000] d.s3   435.587799: move_task: Moving process 571 from cpu 0 to 1
+           <...>-893   [000] d.s3   435.587799: move_task: Done Moving process 571 from cpu 0 to 1
+           <...>-893   [000] d.s3   435.587799: rebal_group: [MIGRATE_TASK] moving pid 571 to cpu[1]--2
+           <...>-893   [000] ..s1   435.587799: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-893   [000] ..s1   435.587799: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-893   [000] ..s1   435.587799: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[2] min_proc_on_run_q:[0] cpu[0] max_proc_on_run_q[0]
+           <...>-568   [000] ..s1   439.247803: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-568   [000] ..s1   439.247833: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-568   [000] ..s1   439.247864: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[0] min_proc_on_run_q:[3] cpu[1] max_proc_on_run_q[5]
+           <...>-568   [000] d.s3   439.247864: move_task: Moving process 1875 from cpu 1 to 0
+           <...>-568   [000] d.s3   439.247894: move_task: Done Moving process 1875 from cpu 1 to 0
+           <...>-568   [000] d.s3   439.247925: rebal_group: [MIGRATE_TASK] moving pid 1875 to cpu[0]--2
+           <...>-568   [000] ..s1   439.247925: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-568   [000] ..s1   439.247925: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-568   [000] ..s1   439.247955: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[2] min_proc_on_run_q:[0] cpu[0] max_proc_on_run_q[0]
+           <...>-555   [003] ..s1   439.597748: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-555   [003] ..s1   439.597778: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-555   [003] ..s1   439.597778: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[0] min_proc_on_run_q:[1] cpu[0] max_proc_on_run_q[1]
+           <...>-555   [003] ..s1   439.597778: rebal_group: [GRR_LOADBALANCER] Same CPUs id: 0
+           <...>-555   [003] ..s1   439.597809: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-555   [003] ..s1   439.597809: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-555   [003] ..s1   439.597809: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[2] min_proc_on_run_q:[0] cpu[3] max_proc_on_run_q[2]
+           <...>-555   [003] d.s3   439.597839: rebal_group: [MIGRATE_TASK] p is NULL
+           <...>-540   [000] ..s1   441.788025: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-540   [000] ..s1   441.788055: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-540   [000] ..s1   441.788055: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[1] min_proc_on_run_q:[0] cpu[0] max_proc_on_run_q[1]
+           <...>-540   [000] ..s1   441.788055: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-540   [000] ..s1   441.788055: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-540   [000] ..s1   441.788055: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[2] min_proc_on_run_q:[0] cpu[0] max_proc_on_run_q[0]
+           <...>-176   [000] .Ns1   442.607788: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-176   [000] .Ns1   442.607788: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-176   [000] .Ns1   442.607819: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[1] min_proc_on_run_q:[1] cpu[0] max_proc_on_run_q[3]
+           <...>-176   [000] dNs3   442.607819: move_task: Moving process 593 from cpu 0 to 1
+           <...>-176   [000] dNs3   442.607849: move_task: Done Moving process 593 from cpu 0 to 1
+           <...>-176   [000] dNs3   442.607849: rebal_group: [MIGRATE_TASK] moving pid 593 to cpu[1]--2
+           <...>-176   [000] .Ns1   442.607880: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-176   [000] .Ns1   442.607880: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-176   [000] .Ns1   442.607910: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[3] min_proc_on_run_q:[0] cpu[2] max_proc_on_run_q[2]
+           <...>-176   [000] dNs3   442.607910: rebal_group: [MIGRATE_TASK] p is NULL
+           <...>-893   [000] ..s1   444.457764: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-893   [000] ..s1   444.457794: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-893   [000] ..s1   444.457794: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[0] min_proc_on_run_q:[2] cpu[1] max_proc_on_run_q[3]
+           <...>-893   [000] ..s1   444.457794: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-893   [000] ..s1   444.457794: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-893   [000] ..s1   444.457794: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[3] min_proc_on_run_q:[0] cpu[2] max_proc_on_run_q[1]
+           <...>-600   [000] ..s1   448.087769: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-600   [000] ..s1   448.087799: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-600   [000] ..s1   448.087799: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[1] min_proc_on_run_q:[0] cpu[0] max_proc_on_run_q[2]
+           <...>-600   [000] d.s3   448.087799: move_task: Moving process 893 from cpu 0 to 1
+           <...>-600   [000] d.s3   448.087830: move_task: Done Moving process 893 from cpu 0 to 1
+           <...>-600   [000] d.s3   448.087830: rebal_group: [MIGRATE_TASK] moving pid 893 to cpu[1]--2
+           <...>-600   [000] ..s1   448.087830: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-600   [000] ..s1   448.087830: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-600   [000] ..s1   448.087830: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[2] min_proc_on_run_q:[0] cpu[0] max_proc_on_run_q[0]
+           <...>-564   [000] ..s1   449.307800: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-564   [000] ..s1   449.307800: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-564   [000] ..s1   449.307831: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[0] min_proc_on_run_q:[4] cpu[1] max_proc_on_run_q[5]
+           <...>-564   [000] ..s1   449.307831: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-564   [000] ..s1   449.307861: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-564   [000] ..s1   449.307861: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[2] min_proc_on_run_q:[0] cpu[0] max_proc_on_run_q[0]
+##### CPU 1 buffer started ####
+           <...>-2591  [001] ..s1   450.017822: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[0] min_proc_on_run_q:[1] cpu[1] max_proc_on_run_q[2]
+           <...>-2591  [001] ..s1   450.017822: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-2591  [001] ..s1   450.017822: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-2591  [001] ..s1   450.017853: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[2] min_proc_on_run_q:[0] cpu[0] max_proc_on_run_q[0]
+           <...>-2235  [003] ..s1   450.857819: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-2235  [003] ..s1   450.857819: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-2235  [003] ..s1   450.857849: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[0] min_proc_on_run_q:[0] cpu[0] max_proc_on_run_q[0]
+           <...>-2235  [003] ..s1   450.857849: rebal_group: [GRR_LOADBALANCER] Same CPUs id: 0
+           <...>-2235  [003] ..s1   450.857849: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-2235  [003] ..s1   450.857880: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-2235  [003] ..s1   450.857880: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[2] min_proc_on_run_q:[1] cpu[3] max_proc_on_run_q[2]
+           <...>-600   [000] ..s1   451.347778: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-600   [000] ..s1   451.347809: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-600   [000] ..s1   451.347809: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[1] min_proc_on_run_q:[1] cpu[0] max_proc_on_run_q[5]
+           <...>-600   [000] d.s3   451.347839: move_task: Moving process 2592 from cpu 0 to 1
+           <...>-600   [000] d.s3   451.347839: move_task: Done Moving process 2592 from cpu 0 to 1
+           <...>-600   [000] d.s3   451.347870: rebal_group: [MIGRATE_TASK] moving pid 2592 to cpu[1]--2
+           <...>-600   [000] ..s1   451.347870: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-600   [000] ..s1   451.347870: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-600   [000] ..s1   451.347900: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[2] min_proc_on_run_q:[1] cpu[2] max_proc_on_run_q[1]
+           <...>-600   [000] ..s1   451.347900: rebal_group: [GRR_LOADBALANCER] Same CPUs id: 2
+           <...>-176   [001] ..s1   452.187775: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-176   [001] ..s1   452.187805: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-176   [001] ..s1   452.187805: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[0] min_proc_on_run_q:[0] cpu[1] max_proc_on_run_q[2]
+           <...>-176   [001] d.s3   452.187836: rebal_group: [MIGRATE_TASK] p is NULL
+           <...>-176   [001] ..s1   452.187836: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-176   [001] ..s1   452.187866: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-176   [001] ..s1   452.187866: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[2] min_proc_on_run_q:[0] cpu[0] max_proc_on_run_q[0]
+           <...>-893   [001] ..s1   452.827759: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-893   [001] ..s1   452.827759: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-893   [001] ..s1   452.827759: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[0] min_proc_on_run_q:[1] cpu[0] max_proc_on_run_q[1]
+           <...>-893   [001] ..s1   452.827759: rebal_group: [GRR_LOADBALANCER] Same CPUs id: 0
+           <...>-893   [001] ..s1   452.827789: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-893   [001] ..s1   452.827789: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-893   [001] ..s1   452.827789: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[3] min_proc_on_run_q:[0] cpu[2] max_proc_on_run_q[2]
+           <...>-893   [001] d.s3   452.827789: move_task: Moving process 981 from cpu 2 to 3
+           <...>-893   [001] d.s3   452.827789: move_task: Done Moving process 981 from cpu 2 to 3
+           <...>-893   [001] d.s3   452.827820: rebal_group: [MIGRATE_TASK] moving pid 981 to cpu[3]--2
+##### CPU 2 buffer started ####
+           <...>-2235  [002] ..s1   453.737854: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-2235  [002] ..s1   453.737885: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[3] min_proc_on_run_q:[0] cpu[2] max_proc_on_run_q[2]
+           <...>-2235  [002] d.s3   453.737885: rebal_group: [MIGRATE_TASK] p is NULL
+           <...>-1875  [001] ..s1   454.357758: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-1875  [001] ..s1   454.357758: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-1875  [001] ..s1   454.357758: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[0] min_proc_on_run_q:[0] cpu[1] max_proc_on_run_q[3]
+           <...>-1875  [001] d.s3   454.357788: move_task: Moving process 87 from cpu 1 to 0
+           <...>-1875  [001] d.s3   454.357788: move_task: Done Moving process 87 from cpu 1 to 0
+           <...>-1875  [001] d.s3   454.357788: rebal_group: [MIGRATE_TASK] moving pid 87 to cpu[0]--2
+           <...>-1875  [001] ..s1   454.357788: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-1875  [001] ..s1   454.357788: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-1875  [001] ..s1   454.357819: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[3] min_proc_on_run_q:[1] cpu[2] max_proc_on_run_q[2]
+           <...>-922   [001] ..s1   455.507782: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-922   [001] ..s1   455.507813: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-922   [001] ..s1   455.507813: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[0] min_proc_on_run_q:[1] cpu[1] max_proc_on_run_q[2]
+           <...>-922   [001] ..s1   455.507813: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-922   [001] ..s1   455.507843: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-922   [001] ..s1   455.507843: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[3] min_proc_on_run_q:[0] cpu[2] max_proc_on_run_q[2]
+           <...>-922   [001] d.s3   455.507874: rebal_group: [MIGRATE_TASK] p is NULL
+           <...>-2538  [002] ..s1   456.147827: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-2538  [002] ..s1   456.147827: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-2538  [002] ..s1   456.147858: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[1] min_proc_on_run_q:[0] cpu[0] max_proc_on_run_q[3]
+           <...>-2538  [002] d.s3   456.147858: move_task: Moving process 594 from cpu 0 to 1
+           <...>-2538  [002] d.s3   456.147888: move_task: Done Moving process 594 from cpu 0 to 1
+           <...>-2538  [002] d.s3   456.147888: rebal_group: [MIGRATE_TASK] moving pid 594 to cpu[1]--2
+           <...>-2538  [002] ..s1   456.147919: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-2538  [002] ..s1   456.147919: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-2538  [002] ..s1   456.147919: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[2] min_proc_on_run_q:[2] cpu[2] max_proc_on_run_q[2]
+           <...>-2538  [002] ..s1   456.147949: rebal_group: [GRR_LOADBALANCER] Same CPUs id: 2
+           <...>-593   [000] ..s1   456.897797: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-593   [000] ..s1   456.897827: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-593   [000] ..s1   456.897827: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[1] min_proc_on_run_q:[1] cpu[0] max_proc_on_run_q[2]
+           <...>-593   [000] ..s1   456.897858: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-593   [000] ..s1   456.897858: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-593   [000] ..s1   456.897858: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[3] min_proc_on_run_q:[0] cpu[2] max_proc_on_run_q[2]
+           <...>-593   [000] d.s3   456.897888: rebal_group: [MIGRATE_TASK] p is NULL
+           <...>-2538  [002] ..s1   457.397797: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-2538  [002] ..s1   457.397797: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-2538  [002] ..s1   457.397827: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[0] min_proc_on_run_q:[1] cpu[0] max_proc_on_run_q[1]
+           <...>-2538  [002] ..s1   457.397827: rebal_group: [GRR_LOADBALANCER] Same CPUs id: 0
+           <...>-2538  [002] ..s1   457.397827: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-2538  [002] ..s1   457.397827: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-2538  [002] ..s1   457.397858: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[2] min_proc_on_run_q:[2] cpu[2] max_proc_on_run_q[2]
+           <...>-2538  [002] ..s1   457.397858: rebal_group: [GRR_LOADBALANCER] Same CPUs id: 2
+           <...>-893   [001] ..s1   458.727753: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-893   [001] ..s1   458.727753: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-893   [001] ..s1   458.727753: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[0] min_proc_on_run_q:[0] cpu[1] max_proc_on_run_q[3]
+           <...>-893   [001] d.s3   458.727783: rebal_group: [MIGRATE_TASK] p is NULL
+           <...>-893   [001] ..s1   458.727783: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-893   [001] ..s1   458.727783: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-893   [001] ..s1   458.727783: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[2] min_proc_on_run_q:[0] cpu[0] max_proc_on_run_q[0]
+           <...>-593   [001] ..s2   460.137756: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-593   [001] ..s2   460.137756: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-593   [001] ..s2   460.137756: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[0] min_proc_on_run_q:[1] cpu[0] max_proc_on_run_q[1]
+           <...>-593   [001] ..s2   460.137756: rebal_group: [GRR_LOADBALANCER] Same CPUs id: 0
+           <...>-593   [001] ..s2   460.137787: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-593   [001] ..s2   460.137787: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-593   [001] ..s2   460.137787: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[3] min_proc_on_run_q:[0] cpu[2] max_proc_on_run_q[2]
+           <...>-593   [001] d.s4   460.137787: rebal_group: [MIGRATE_TASK] p is NULL
+           <...>-893   [000] ..s1   461.207794: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-893   [000] ..s1   461.207825: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-893   [000] ..s1   461.207825: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[1] min_proc_on_run_q:[0] cpu[0] max_proc_on_run_q[6]
+           <...>-893   [000] d.s3   461.207855: move_task: Moving process 505 from cpu 0 to 1
+           <...>-893   [000] d.s3   461.207886: move_task: Done Moving process 505 from cpu 0 to 1
+           <...>-893   [000] d.s3   461.207886: rebal_group: [MIGRATE_TASK] moving pid 505 to cpu[1]--2
+           <...>-893   [000] ..s1   461.207886: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-893   [000] ..s1   461.207916: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-893   [000] ..s1   461.207916: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[2] min_proc_on_run_q:[0] cpu[0] max_proc_on_run_q[0]
+           <...>-2591  [001] ..s1   461.847778: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-2591  [001] ..s1   461.847809: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-2591  [001] ..s1   461.847809: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[0] min_proc_on_run_q:[1] cpu[1] max_proc_on_run_q[3]
+           <...>-2591  [001] d.s3   461.847839: rebal_group: [MIGRATE_TASK] p is NULL
+           <...>-2591  [001] ..s1   461.847839: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-2591  [001] ..s1   461.847870: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-2591  [001] ..s1   461.847870: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[3] min_proc_on_run_q:[0] cpu[2] max_proc_on_run_q[2]
+           <...>-2591  [001] d.s3   461.847870: rebal_group: [MIGRATE_TASK] p is NULL
+           <...>-607   [001] ..s2   462.217773: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-607   [001] ..s2   462.217773: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-607   [001] ..s2   462.217773: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[0] min_proc_on_run_q:[2] cpu[0] max_proc_on_run_q[2]
+           <...>-607   [001] ..s2   462.217773: rebal_group: [GRR_LOADBALANCER] Same CPUs id: 0
+           <...>-607   [001] ..s2   462.217773: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-607   [001] ..s2   462.217773: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-607   [001] ..s2   462.217773: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[2] min_proc_on_run_q:[2] cpu[2] max_proc_on_run_q[2]
+           <...>-607   [001] ..s2   462.217773: rebal_group: [GRR_LOADBALANCER] Same CPUs id: 2
+           <...>-1610  [002] ..s1   462.437744: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-1610  [002] ..s1   462.437775: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-1610  [002] ..s1   462.437775: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[0] min_proc_on_run_q:[1] cpu[1] max_proc_on_run_q[2]
+           <...>-1610  [002] ..s1   462.437775: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-1610  [002] ..s1   462.437775: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-1610  [002] ..s1   462.437775: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[2] min_proc_on_run_q:[5] cpu[2] max_proc_on_run_q[5]
+           <...>-1610  [002] ..s1   462.437775: rebal_group: [GRR_LOADBALANCER] Same CPUs id: 2
+           <...>-506   [001] ..s1   462.627747: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-506   [001] ..s1   462.627747: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-506   [001] ..s1   462.627747: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[1] min_proc_on_run_q:[2] cpu[0] max_proc_on_run_q[3]
+           <...>-506   [001] ..s1   462.627747: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-506   [001] ..s1   462.627747: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-506   [001] ..s1   462.627777: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[2] min_proc_on_run_q:[0] cpu[3] max_proc_on_run_q[4]
+           <...>-506   [001] d.s3   462.627777: move_task: Moving process 2535 from cpu 3 to 2
+           <...>-506   [001] d.s3   462.627777: move_task: Done Moving process 2535 from cpu 3 to 2
+           <...>-506   [001] d.s3   462.627777: rebal_group: [MIGRATE_TASK] moving pid 2535 to cpu[2]--2
+           <...>-2622  [002] ..s1   462.967773: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-2622  [002] ..s1   462.967773: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-2622  [002] ..s1   462.967804: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[1] min_proc_on_run_q:[2] cpu[0] max_proc_on_run_q[3]
+           <...>-2622  [002] ..s1   462.967804: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-2622  [002] ..s1   462.967804: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-2622  [002] ..s1   462.967804: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[3] min_proc_on_run_q:[0] cpu[2] max_proc_on_run_q[2]
+           <...>-2622  [002] d.s3   462.967804: rebal_group: [MIGRATE_TASK] p is NULL
+           <...>-562   [002] ..s1   463.337738: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-562   [002] ..s1   463.337769: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-562   [002] ..s1   463.337769: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[0] min_proc_on_run_q:[0] cpu[0] max_proc_on_run_q[0]
+           <...>-562   [002] ..s1   463.337769: rebal_group: [GRR_LOADBALANCER] Same CPUs id: 0
+           <...>-562   [002] ..s1   463.337769: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-562   [002] ..s1   463.337769: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-562   [002] ..s1   463.337769: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[3] min_proc_on_run_q:[0] cpu[2] max_proc_on_run_q[1]
+           <...>-562   [002] ..s1   463.717743: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-562   [002] ..s1   463.717743: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-562   [002] ..s1   463.717773: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[0] min_proc_on_run_q:[1] cpu[0] max_proc_on_run_q[1]
+           <...>-562   [002] ..s1   463.717773: rebal_group: [GRR_LOADBALANCER] Same CPUs id: 0
+           <...>-562   [002] ..s1   463.717773: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-562   [002] ..s1   463.717773: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-562   [002] ..s1   463.717773: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[3] min_proc_on_run_q:[0] cpu[2] max_proc_on_run_q[1]
+           <...>-562   [002] ..s1   464.057739: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-562   [002] ..s1   464.057770: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-562   [002] ..s1   464.057770: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[0] min_proc_on_run_q:[0] cpu[0] max_proc_on_run_q[0]
+           <...>-562   [002] ..s1   464.057770: rebal_group: [GRR_LOADBALANCER] Same CPUs id: 0
+           <...>-562   [002] ..s1   464.057770: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-562   [002] ..s1   464.057770: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-562   [002] ..s1   464.057770: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[3] min_proc_on_run_q:[0] cpu[2] max_proc_on_run_q[1]
+           <...>-506   [001] ..s1   464.457733: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-506   [001] ..s1   464.457733: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-506   [001] ..s1   464.457764: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[0] min_proc_on_run_q:[2] cpu[0] max_proc_on_run_q[2]
+           <...>-506   [001] ..s1   464.457764: rebal_group: [GRR_LOADBALANCER] Same CPUs id: 0
+           <...>-506   [001] ..s1   464.457764: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-506   [001] ..s1   464.457764: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-506   [001] ..s1   464.457764: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[3] min_proc_on_run_q:[0] cpu[2] max_proc_on_run_q[1]
+           <...>-562   [002] ..s1   464.897736: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 3:
+           <...>-562   [002] ..s1   464.897766: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 3:
+           <...>-562   [002] ..s1   464.897766: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[0] min_proc_on_run_q:[0] cpu[0] max_proc_on_run_q[0]
+           <...>-562   [002] ..s1   464.897766: rebal_group: [GRR_LOADBALANCER] Same CPUs id: 0
+           <...>-562   [002] ..s1   464.897766: rebal_group: 
+~~~~
+[GRR_LOADBALANCER] Checking load for 12:
+           <...>-562   [002] ..s1   464.897766: rebal_group: [GRR_LOADBALANCER] 2 cpus checked for 12:
+           <...>-562   [002] ..s1   464.897766: rebal_group: [GRR_LOADBALANCER]In the rebalance method
+[GRR_LOADBALANCER] cpu[3] min_proc_on_run_q:[0] cpu[2] max_proc_on_run_q[2]
+           <...>-562   [002] d.s3   464.897766: move_task: Moving process 2202 from cpu 2 to 3
+           <...>-562   [002] d.s3   464.897766: move_task: Done Moving process 2202 from cpu 2 to 3
+           <...>-562   [002] d.s3   464.897797: rebal_group: [MIGRATE_TASK] moving pid 2202 to cpu[3]--2

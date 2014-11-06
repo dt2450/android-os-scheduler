@@ -1,0 +1,130 @@
+Sched Debug Version: v0.10, 3.4.0 #154
+ktime                                   : 175241.572173
+sched_clk                               : 175238.189697
+cpu_clk                                 : 175238.189697
+jiffies                                 : 4294954820
+
+sysctl_sched
+  .sysctl_sched_latency                    : 10.000000
+  .sysctl_sched_min_granularity            : 2.250000
+  .sysctl_sched_wakeup_granularity         : 2.000000
+  .sysctl_sched_child_runs_first           : 0
+  .sysctl_sched_features                   : 24119
+  .sysctl_sched_tunable_scaling            : 1 (logaritmic)
+
+cpu#0
+  .nr_running                    : 0
+  .load                          : 0
+  .nr_switches                   : 402198
+  .nr_load_updates               : 17432
+  .nr_uninterruptible            : 4294965369
+  .next_balance                  : 4294.954828
+  .curr->pid                     : 0
+  .clock                         : 175236.755371
+  .cpu_load[0]                   : 0
+  .cpu_load[1]                   : 0
+  .cpu_load[2]                   : 0
+  .cpu_load[3]                   : 0
+  .cpu_load[4]                   : 0
+  .yld_count                     : 45
+  .sched_count                   : 410867
+  .sched_goidle                  : 108522
+  .avg_idle                      : 1000000
+  .ttwu_count                    : 352400
+  .ttwu_local                    : 189886
+
+grr_rq[0]:
+  .grr_nr_running                : 0
+
+runnable tasks:
+            task   PID         tree-key  switches  prio     exec-runtime         sum-exec        sum-sleep
+----------------------------------------------------------------------------------------------------------
+
+cpu#1
+  .nr_running                    : 2
+  .load                          : 0
+  .nr_switches                   : 333346
+  .nr_load_updates               : 15569
+  .nr_uninterruptible            : 1916
+  .next_balance                  : 4294.954844
+  .curr->pid                     : 2726
+  .clock                         : 175236.938476
+  .cpu_load[0]                   : 0
+  .cpu_load[1]                   : 0
+  .cpu_load[2]                   : 0
+  .cpu_load[3]                   : 0
+  .cpu_load[4]                   : 0
+  .yld_count                     : 47
+  .sched_count                   : 345086
+  .sched_goidle                  : 72792
+  .avg_idle                      : 1000000
+  .ttwu_count                    : 193634
+  .ttwu_local                    : 86244
+
+grr_rq[1]:
+  .grr_nr_running                : 2
+  Task: 0 - adbd, PID: 2726, Group: /          (FG)
+  Task: 1 - kworker/1:0, PID: 8, Group: /          (FG)
+
+runnable tasks:
+            task   PID         tree-key  switches  prio     exec-runtime         sum-exec        sum-sleep
+----------------------------------------------------------------------------------------------------------
+     kworker/1:0     8         0.000000      3725   120         0.000000         0.030518         0.000000 /
+R           adbd  2726         0.000000         5   120         0.000000         0.000000         0.000000 /
+
+cpu#2
+  .nr_running                    : 0
+  .load                          : 0
+  .nr_switches                   : 69677
+  .nr_load_updates               : 11640
+  .nr_uninterruptible            : 4294966892
+  .next_balance                  : 4294.954821
+  .curr->pid                     : 0
+  .clock                         : 175236.907958
+  .cpu_load[0]                   : 0
+  .cpu_load[1]                   : 0
+  .cpu_load[2]                   : 0
+  .cpu_load[3]                   : 0
+  .cpu_load[4]                   : 0
+  .yld_count                     : 94
+  .sched_count                   : 76373
+  .sched_goidle                  : 32187
+  .avg_idle                      : 1000000
+  .ttwu_count                    : 43853
+  .ttwu_local                    : 3825
+
+grr_rq[2]:
+  .grr_nr_running                : 0
+
+runnable tasks:
+            task   PID         tree-key  switches  prio     exec-runtime         sum-exec        sum-sleep
+----------------------------------------------------------------------------------------------------------
+
+cpu#3
+  .nr_running                    : 0
+  .load                          : 0
+  .nr_switches                   : 20958
+  .nr_load_updates               : 3640
+  .nr_uninterruptible            : 419
+  .next_balance                  : 4294.954821
+  .curr->pid                     : 0
+  .clock                         : 174692.779541
+  .cpu_load[0]                   : 0
+  .cpu_load[1]                   : 0
+  .cpu_load[2]                   : 0
+  .cpu_load[3]                   : 0
+  .cpu_load[4]                   : 0
+  .yld_count                     : 58
+  .sched_count                   : 24574
+  .sched_goidle                  : 7891
+  .avg_idle                      : 1000000
+  .ttwu_count                    : 15510
+  .ttwu_local                    : 1705
+
+grr_rq[3]:
+  .grr_nr_running                : 0
+
+runnable tasks:
+            task   PID         tree-key  switches  prio     exec-runtime         sum-exec        sum-sleep
+----------------------------------------------------------------------------------------------------------
+

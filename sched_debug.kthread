@@ -1,0 +1,134 @@
+Sched Debug Version: v0.10, 3.4.0 #134
+ktime                                   : 465311.398664
+sched_clk                               : 465309.112548
+cpu_clk                                 : 465309.112548
+jiffies                                 : 16531
+
+sysctl_sched
+  .sysctl_sched_latency                    : 10.000000
+  .sysctl_sched_min_granularity            : 2.250000
+  .sysctl_sched_wakeup_granularity         : 2.000000
+  .sysctl_sched_child_runs_first           : 0
+  .sysctl_sched_features                   : 24119
+  .sysctl_sched_tunable_scaling            : 1 (logaritmic)
+
+cpu#0
+  .nr_running                    : 2
+  .load                          : 0
+  .nr_switches                   : 733129
+  .nr_load_updates               : 46429
+  .nr_uninterruptible            : 4294965667
+  .next_balance                  : 0.016539
+  .curr->pid                     : 2625
+  .clock                         : 465308.563232
+  .cpu_load[0]                   : 0
+  .cpu_load[1]                   : 0
+  .cpu_load[2]                   : 0
+  .cpu_load[3]                   : 0
+  .cpu_load[4]                   : 0
+  .yld_count                     : 40
+  .sched_count                   : 742649
+  .sched_goidle                  : 245122
+  .avg_idle                      : 656292
+  .ttwu_count                    : 572417
+  .ttwu_local                    : 303523
+
+grr_rq[0]:
+  .grr_nr_running                : 2
+  Task: 0 - adbd, PID: 2625, Group: /          (FG)
+  Task: 1 - adbd, PID: 213, Group: /          (FG)
+
+runnable tasks:
+            task   PID         tree-key  switches  prio     exec-runtime         sum-exec        sum-sleep
+----------------------------------------------------------------------------------------------------------
+            adbd   213         0.000000        93   120         0.000000         0.000000         0.000000 /
+R           adbd  2625         0.000000         5   120         0.000000         0.000000         0.000000 /
+
+cpu#1
+  .nr_running                    : 0
+  .load                          : 0
+  .nr_switches                   : 474335
+  .nr_load_updates               : 30060
+  .nr_uninterruptible            : 1670
+  .next_balance                  : 0.016540
+  .curr->pid                     : 0
+  .clock                         : 465308.624267
+  .cpu_load[0]                   : 0
+  .cpu_load[1]                   : 0
+  .cpu_load[2]                   : 0
+  .cpu_load[3]                   : 0
+  .cpu_load[4]                   : 0
+  .yld_count                     : 49
+  .sched_count                   : 487989
+  .sched_goidle                  : 151723
+  .avg_idle                      : 920776
+  .ttwu_count                    : 238370
+  .ttwu_local                    : 78475
+
+grr_rq[1]:
+  .grr_nr_running                : 0
+
+runnable tasks:
+            task   PID         tree-key  switches  prio     exec-runtime         sum-exec        sum-sleep
+----------------------------------------------------------------------------------------------------------
+
+cpu#2
+  .nr_running                    : 2
+  .load                          : 0
+  .nr_switches                   : 97354
+  .nr_load_updates               : 15210
+  .nr_uninterruptible            : 4294967208
+  .next_balance                  : 0.016542
+  .curr->pid                     : 562
+  .clock                         : 465307.739257
+  .cpu_load[0]                   : 0
+  .cpu_load[1]                   : 0
+  .cpu_load[2]                   : 0
+  .cpu_load[3]                   : 0
+  .cpu_load[4]                   : 0
+  .yld_count                     : 81
+  .sched_count                   : 100188
+  .sched_goidle                  : 44442
+  .avg_idle                      : 878814
+  .ttwu_count                    : 45916
+  .ttwu_local                    : 6032
+
+grr_rq[2]:
+  .grr_nr_running                : 2
+  Task: 0 - PackageManager, PID: 562, Group: /apps/bg_non_interactive (BG)
+  Task: 1 - kworker/2:1, PID: 21, Group: /          (FG)
+
+runnable tasks:
+            task   PID         tree-key  switches  prio     exec-runtime         sum-exec        sum-sleep
+----------------------------------------------------------------------------------------------------------
+     kworker/2:1    21         0.000000      4370   120         0.000000         0.030517         0.000000 /
+R PackageManager   562         0.000000       138   130         0.000000         0.000000         0.000000 /apps/bg_non_interactive
+
+cpu#3
+  .nr_running                    : 0
+  .load                          : 0
+  .nr_switches                   : 40895
+  .nr_load_updates               : 4606
+  .nr_uninterruptible            : 51
+  .next_balance                  : 0.016532
+  .curr->pid                     : 0
+  .clock                         : 465297.424316
+  .cpu_load[0]                   : 0
+  .cpu_load[1]                   : 0
+  .cpu_load[2]                   : 0
+  .cpu_load[3]                   : 0
+  .cpu_load[4]                   : 0
+  .yld_count                     : 62
+  .sched_count                   : 43371
+  .sched_goidle                  : 18431
+  .avg_idle                      : 1000000
+  .ttwu_count                    : 17463
+  .ttwu_local                    : 2349
+
+grr_rq[3]:
+  .grr_nr_running                : 0
+
+runnable tasks:
+            task   PID         tree-key  switches  prio     exec-runtime         sum-exec        sum-sleep
+----------------------------------------------------------------------------------------------------------
+

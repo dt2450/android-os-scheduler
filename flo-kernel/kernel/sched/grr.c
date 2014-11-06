@@ -90,13 +90,13 @@ static atomic_t bg_cpu_mask;
 static void move_task(struct rq *src_rq, struct rq *dst_rq,
 		struct task_struct *p, int dst_cpu)
 {
-	//if (p->pid == 21)
+	if (p->comm[0] == 'k' && p->comm[1] == 'w')
 	trace_printk("Moving process %d [%s] from cpu %d to %d\n", p->pid,
 			p->comm, src_rq->cpu, dst_cpu);
 	deactivate_task(src_rq, p, 0);
 	set_task_cpu(p, dst_cpu);
 	activate_task(dst_rq, p, 0);
-	//if (p->pid == 21)
+	if (p->comm[0] == 'k' && p->comm[1] == 'w')
 	trace_printk("Done Moving process %d [%s] from cpu %d to %d\n",
 			p->pid, p->comm, src_rq->cpu, dst_cpu);
 }
@@ -168,7 +168,7 @@ select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 	tg_str = get_tg_str(p);
 	len = strlen(tg_str);
 	if (len <= 5) {
-		//if (p->pid == 21)
+		if (p->comm[0] == 'k' && p->comm[1] == 'w')
 			trace_printk("select_task_rq_grr: FG task: %s : %d [%s]\n",
 					tg_str, p->pid, p->comm);
 		cpu_mask = atomic_read(&fg_cpu_mask);
@@ -192,7 +192,7 @@ select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 		}
 	}
 	rcu_read_unlock();
-	//if (p->pid == 21)
+	if (p->comm[0] == 'k' && p->comm[1] == 'w')
 		trace_printk("select_task_rq_grr: selected CPU: %d\n", min_cpu);
 	return min_cpu;
 }
@@ -212,7 +212,7 @@ static void migrate_task(struct rq *dst_rq, struct rq *src_rq, int dst_cpu)
 		move_task(src_rq, dst_rq, p,
 				dst_cpu);
 		//for debugging
-		//if (p->pid == 21)
+	if (p->comm[0] == 'k' && p->comm[1] == 'w')
 		trace_printk("[MIGRATE_TASK] moving pid %d [%s] to cpu[%d]--2\n",
 				p->pid, p->comm, dst_cpu);
 
@@ -512,6 +512,9 @@ enqueue_task_grr(struct rq *rq, struct task_struct *p, int flags)
 	//		task_group_path(task_group(p)), p->pid);
 
 	//printlist(rq);
+	//for debugging
+	if (p->comm[0] == 'k' && p->comm[1] == 'w')
+		trace_printk("enqueue_task_grr: [%s] getting enqueued on cpu:%d\n", p->comm, cpu_of(rq));
 
 	if (flags & ENQUEUE_WAKEUP)
 		grr_se->timeout = 0;

@@ -26,8 +26,8 @@ int main(int argc, char **argv)
 	if (ret == -1)
 		printf("error is: %s\n", strerror(errno));
 	while (1) {
-		//printf("Running now.. pid %d\n", getpid());
-		//printf("%ld\n", syscall(__NR_sched_getscheduler, getpid()));
+		printf("Running now.. pid %d\n", getpid());
+		printf("%ld\n", syscall(__NR_sched_getscheduler, getpid()));
 	}
 	return 0;
 

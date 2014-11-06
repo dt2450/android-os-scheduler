@@ -374,10 +374,6 @@ __init void init_sched_grr_class(void)
 		atomic_set(&bg_cpu_mask, (int_bg_cpu_mask << fg_cpus));
 	}
 
-	//for debugging
-	//atomic_set(&fg_cpu_mask, 1);
-	//atomic_set(&bg_cpu_mask, 14);
-
 	atomic_set(&load_balance_time_slice,GRR_LOAD_BALANCE_TIMESLICE);
         open_softirq(SCHED_GRR_SOFTIRQ, rebalance);
 }

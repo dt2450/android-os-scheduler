@@ -4985,9 +4985,7 @@ SYSCALL_DEFINE2(sched_set_CPUgroup, int, numCPU, int, group)
 			trace_printk("[sched_set_CPUgroup] fg_mask:%d, bg_mask: %d, msb:%d",
 				fg_mask, bg_mask, msb);
 			trace_printk(" bit_position:%d\n", bit_position);
-			//return_value = move_cpu_group(bit_position, nr_cpu_ids-1);
-			//TODO: implement move_cpu_group
-			return_value = 1;
+			return_value = move_cpu_group(bit_position, nr_cpu_ids-1);
 			number_cpus_needed+=1;
 		}
 	} else {
@@ -4999,8 +4997,7 @@ SYSCALL_DEFINE2(sched_set_CPUgroup, int, numCPU, int, group)
 			trace_printk("[sched_set_CPUgroup] fg_mask:%d, bg_mask: %d, lsb:%d",
 				fg_mask, bg_mask, lsb);
 			trace_printk(" bit_position:%d\n", bit_position);
-			//return_value = move_cpu_group(bit_position, 0);	
-			return_value = 1;
+			return_value = move_cpu_group(bit_position, 0);
 			number_cpus_needed+=1;
 		}
 	}

@@ -365,9 +365,18 @@ __init void init_sched_grr_class(void)
 	int bg_cpus = num_cpus - fg_cpus;
 	int int_bg_cpu_mask = 0;
 	
-	atomic_set(&fg_cpu_mask, ((1<<fg_cpus)-1));
-	int_bg_cpu_mask = ((1<<bg_cpus)-1);
-	atomic_set(&bg_cpu_mask, (int_bg_cpu_mask << fg_cpus));
+	if (PART_I_ONLY) {
+		atomic_set(&fg_cpu_mask, -1);
+		atomic_set(&bg_cpu_mask, -1);
+	} else {
+		atomic_set(&fg_cpu_mask, ((1<<fg_cpus)-1));
+		int_bg_cpu_mask = ((1<<bg_cpus)-1);
+		atomic_set(&bg_cpu_mask, (int_bg_cpu_mask << fg_cpus));
+	}
+
+	//for debugging
+	//atomic_set(&fg_cpu_mask, 1);
+	//atomic_set(&bg_cpu_mask, 14);
 
 	atomic_set(&load_balance_time_slice,GRR_LOAD_BALANCE_TIMESLICE);
         open_softirq(SCHED_GRR_SOFTIRQ, rebalance);

@@ -6,7 +6,7 @@
  * grr scheduling class.
  */
 
-#define PART_I_ONLY 1
+#define PART_I_ONLY 0
 
 static atomic_t load_balance_time_slice;
 

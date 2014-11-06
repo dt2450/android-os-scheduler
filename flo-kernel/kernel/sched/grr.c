@@ -472,32 +472,6 @@ static void put_prev_task_grr(struct rq *rq, struct task_struct *prev)
 	put_prev_entity(grr_rq, grr_se);
 }
 
-/*
- * Put task to the head or the end of the run list without the overhead of
- * dequeue followed by enqueue.
- */
-static void
-requeue_grr_entity(struct grr_rq *grr_rq, struct sched_grr_entity *grr_se,
-		int head)
-{
-	if (on_grr_rq(grr_se)) {
-		struct list_head *queue = &grr_rq->queue;
-
-		if (head)
-			list_move(&grr_se->run_list, queue);
-		else
-			list_move_tail(&grr_se->run_list, queue);
-	}
-}
-
-static void requeue_task_grr(struct rq *rq, struct task_struct *p, int head)
-{
-	struct sched_grr_entity *grr_se = &p->grre;
-	struct grr_rq *grr_rq = grr_rq_of_se(grr_se);
-
-	requeue_grr_entity(grr_rq, grr_se, head);
-}
-
 static void task_tick_grr(struct rq *rq, struct task_struct *p, int queued)
 {
 	struct sched_grr_entity *grr_se = &p->grre;
@@ -507,10 +481,8 @@ static void task_tick_grr(struct rq *rq, struct task_struct *p, int queued)
 
 	if (!(--p->grre.time_slice)) {
 		p->grre.time_slice = GRR_TIMESLICE;
-		if (grr_se->run_list.prev != grr_se->run_list.next) {
-			requeue_task_grr(rq, p, 0);
+		if (grr_se->run_list.prev != grr_se->run_list.next)
 			set_tsk_need_resched(p);
-		}
 	}
 
 #ifdef CONFIG_SMP

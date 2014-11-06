@@ -324,27 +324,6 @@ struct grr_rq {
 	struct list_head queue;
 
 	unsigned long grr_nr_running;
-	//for debugging we don't need priorities
-#if 0
-#if defined CONFIG_SMP || defined CONFIG_RT_GROUP_SCHED
-	struct {
-		int curr; /* highest queued rt task prio */
-#ifdef CONFIG_SMP
-		int next; /* next highest */
-#endif
-	} highest_prio;
-#endif
-#endif
-	//for debugging
-	//enable on a need basis
-#if 0
-#ifdef CONFIG_SMP
-	unsigned long grr_nr_migratory;
-	unsigned long grr_nr_total;
-	int overloaded;
-	struct plist_head pushable_tasks;
-#endif
-#endif
 	/*
 	 * 'curr' points to currently running entity on this cfs_rq.
 	 * It is set to NULL otherwise (i.e when none are currently running).
@@ -355,18 +334,6 @@ struct grr_rq {
 	u64 grr_runtime;
 	/* Nests inside the rq lock: */
 	raw_spinlock_t grr_runtime_lock;
-
-	//for debugging we don't care about this
-	//as mentioned in class
-#if 0
-#ifdef CONFIG_RT_GROUP_SCHED
-	unsigned long rt_nr_boosted;
-
-	struct rq *rq;
-	struct list_head leaf_rt_rq_list;
-	struct task_group *tg;
-#endif
-#endif
 };
 
 

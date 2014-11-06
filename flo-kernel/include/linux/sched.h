@@ -1258,33 +1258,6 @@ struct sched_grr_entity {
 	unsigned int		time_slice;
 	struct load_weight	load;		/* for load-balancing */
 	unsigned int		on_rq;
-	//for debugging
-#if 0
-	struct rb_node		run_node;
-	struct list_head	group_node;
-	unsigned int		on_rq;
-	u64			exec_start;
-	u64			sum_exec_runtime;
-	//u64			vruntime;
-	u64			prev_sum_exec_runtime;
-
-	u64			nr_migrations;
-
-#ifdef CONFIG_SCHEDSTATS
-	struct sched_statistics statistics;
-#endif
-#endif
-
-	//for debugging
-#if 0
-#ifdef CONFIG_FAIR_GROUP_SCHED
-	struct sched_entity	*parent;
-	/* rq on which this entity is (to be) queued: */
-	struct cfs_rq		*cfs_rq;
-	/* rq "owned" by this entity/group: */
-	struct cfs_rq		*my_q;
-#endif
-#endif
 };
 
 /*

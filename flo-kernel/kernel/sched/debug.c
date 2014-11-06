@@ -175,14 +175,6 @@ void print_grr_rq(struct seq_file *m, int cpu)
 
 	int i = 0;
 	char *tg_str = NULL;
-/*
-#ifdef CONFIG_FAIR_GROUP_SCHED
-	//SEQ_printf(m, "\ncfs_rq[%d]:%s\n", cpu, task_group_path(cfs_rq->tg));
-	SEQ_printf(m, "\nin IF cfs_rq[%d]:\n", cpu);
-#else
-	SEQ_printf(m, "\ngrr_rq[%d]:\n", cpu);
-#endif
-*/
 	
 	SEQ_printf(m, "\ngrr_rq[%d]:\n", cpu);
 	raw_spin_lock_irqsave(&rq->lock, flags);
@@ -195,8 +187,7 @@ void print_grr_rq(struct seq_file *m, int cpu)
 				SEQ_printf(m, "  Task: %d - %s, PID: %d, Group: %-10s (FG)\n", i++, p->comm, p->pid, tg_str);
 			else
 				SEQ_printf(m, "  Task: %d - %s, PID: %d, Group: %-10s (BG)\n", i++, p->comm, p->pid, tg_str);
-		}
-		else {
+		} else {
 			SEQ_printf(m, "  %s %d:  %-30s\n", "Task ", i++, "NULL :(");
 		}
         }
@@ -341,8 +332,10 @@ static void print_cpu(struct seq_file *m, int cpu)
 #undef P64
 #endif
 	spin_lock_irqsave(&sched_debug_lock, flags);
+	/*
 	print_cfs_stats(m, cpu);
-	//print_rt_stats(m, cpu);
+	print_rt_stats(m, cpu);
+	*/
 	print_grr_stats(m, cpu);
 
 	rcu_read_lock();

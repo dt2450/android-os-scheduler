@@ -3242,11 +3242,12 @@ need_resched:
 	}
 
 	pre_schedule(rq, prev);
-
+#ifdef	CONFIG_SMP
 	if (unlikely(!rq->nr_running)) {
 		trace_printk("__schedule: no running task, going to steal ...\n");
 		steal_from_another_cpu_grr(rq);
 	}
+#endif
 
 	put_prev_task(rq, prev);
 	next = pick_next_task(rq);

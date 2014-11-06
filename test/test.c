@@ -8,28 +8,24 @@
 
 #define SCHED_GRR 6
 struct sched_param {
-        int sched_priority;
+	int sched_priority;
 };
 
 
 int main(int argc, char **argv)
 {
 	int ret;
-	//FOREGROUND = 1
-	//BACKGROUND = 2
-	//set cpu group numcpu, group
-	 
-        struct sched_param param;
-        param.sched_priority = 0;
-        ret = syscall(__NR_sched_setscheduler,getpid(), SCHED_GRR,
-                        (const struct sched_param *)&param);
+	/*set cpu group numcpu, group*/
+	struct sched_param param;
 
-	
-	//set scheduler here
+	param.sched_priority = 0;
+	ret = syscall(__NR_sched_setscheduler, getpid(), SCHED_GRR,
+			(const struct sched_param *)&param);
+	/*set scheduler here*/
 	printf("Ret: %d\n", ret);
-	if(ret == -1)
+	if (ret == -1)
 		printf("error is: %s\n", strerror(errno));
-	while(1) {
+	while (1) {
 		printf("Running now.. pid %d\n", getpid());
 		printf("%ld\n", syscall(__NR_sched_getscheduler, getpid()));
 	}

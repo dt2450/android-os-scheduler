@@ -17,14 +17,13 @@ TEST FILES:
 test.c
 test_cpugroup.c
 test_heavy.c
-TODO: description of tests ??
 
 Benchmark apps used and scores:
 ===============================
-		Score (1 FG CPU)	Score (2 FG CPU)	Score (3 FG CPU)
-Geekbench	581, 582		591, 1095		580, 1372
-Pi		
-Quadrant
+		Score (2 FG CPU)	Score (3 FG CPU)
+Geekbench	591, 1095		580, 1372
+Pi		675.94			695.34
+Quadrant	4088			
 
 Methods used to test the scheduler:
 ===================================

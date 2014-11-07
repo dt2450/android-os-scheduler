@@ -22,8 +22,8 @@ TODO: description of tests ??
 Benchmark apps used and scores:
 ===============================
 		Score (1 FG CPU)	Score (2 FG CPU)	Score (3 FG CPU)
-Geekbench				591, 1095
-Pi
+Geekbench	581, 582		591, 1095		580, 1372
+Pi		
 Quadrant
 
 Methods used to test the scheduler:

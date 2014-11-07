@@ -1,0 +1,41 @@
+files changed:
+==============
+HEADER FILES:
+include/linux/sched.h
+include/linux/init_task.h
+include/linux/interrupt.h
+
+C FILES:
+kernel/sched/grr.c
+kernel/sched/fair.c
+kernel/sched/rt.c
+kernel/sched/core.c
+kernel/sched/debug.c
+kernel/sched/sched.h
+
+TEST FILES:
+test.c
+test_cpugroup.c
+test_heavy.c
+TODO: description of tests ??
+
+Benchmark apps used and scores:
+===============================
+		Score (1 FG CPU)	Score (2 FG CPU)	Score (3 FG CPU)
+Geekbench
+Pi
+Quadrant
+
+Methods used to test the scheduler:
+===================================
+- Started the browser with multiple tabs, then set it to background.
+- Downloaded and installed large apps like games and antivirus (to see background activity)
+- Started own test processes (listed above) to see if enqueuing / dequeuing / balancing was happening properly.
+
+Visualizing scheduler load:
+===========================
+The code put in debug.c by us now prints statistics for the GRR scheduler, eg. the no. of tasks, their PIDs, names and group information.
+To download the information from the emulator/device, use the command:
+
+adb pull /proc/sched_debug
+The file sched_debug contains the statistics for our GRR scheduler.

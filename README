@@ -14,16 +14,15 @@ kernel/sched/debug.c
 kernel/sched/sched.h
 
 TEST FILES:
-test.c
-test_cpugroup.c
-test_heavy.c
+test.c: starts a process, using GRR as default scheduler, and runs in an infinite loop.
+test_cpugroup.c: used for setting numCPU for a task_group (calls the homework syscall). Right now defaults to setting the number of CPUs specified to Foreground tasks.
 
 Benchmark apps used and scores:
 ===============================
 		Score (2 FG CPU)	Score (3 FG CPU)
 Geekbench	591, 1095		580, 1372
 Pi		675.94			695.34
-Quadrant	4088			
+Quadrant	4088			4203
 
 Methods used to test the scheduler:
 ===================================
@@ -36,5 +35,6 @@ Visualizing scheduler load:
 The code put in debug.c by us now prints statistics for the GRR scheduler, eg. the no. of tasks, their PIDs, names and group information.
 To download the information from the emulator/device, use the command:
 
-adb pull /proc/sched_debug
+"adb pull /proc/sched_debug"
+
 The file sched_debug contains the statistics for our GRR scheduler.

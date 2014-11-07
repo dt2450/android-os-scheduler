@@ -130,9 +130,9 @@ select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 	char *tg_str = NULL;
 	int len = 0;
 	int min_cpu = 0;
-	unsigned long min_q_len = (unsigned long)-1;
+	unsigned long min_q_len = ULONG_MAX;
 	int curr_cpu = 0;
-	int cpu_mask = 0;
+	unsigned int cpu_mask = 0;
 
 	tg_str = get_tg_str(p);
 	len = strlen(tg_str);
@@ -141,7 +141,7 @@ select_task_rq_grr(struct task_struct *p, int sd_flag, int flags)
 	else
 		cpu_mask = atomic_read(&bg_cpu_mask);
 	if (PART_I_ONLY)
-		cpu_mask = -1;
+		cpu_mask = UINT_MAX;
 	rcu_read_lock();
 	for_each_online_cpu(curr_cpu) {
 		struct rq *rq = cpu_rq(curr_cpu);
@@ -190,7 +190,7 @@ static void migrate_task(struct rq *dst_rq, struct rq *src_rq, int dst_cpu)
  * attempted every 500ms for each CPU.
  */
 
-static void rebal_group(int cpu_mask)
+static void rebal_group(unsigned int cpu_mask)
 {
 	int i, heavy_cpu, light_cpu;
 	unsigned long max_proc_on_run_q, min_proc_on_run_q;
@@ -234,7 +234,7 @@ void steal_from_another_cpu_grr(struct rq *this_rq)
 	struct grr_rq *grr_rq = &rq->grr;
 	struct rq *stolen_rq = NULL;
 	int cpu, i;
-	int cpu_mask = -1;
+	unsigned int cpu_mask = UINT_MAX;
 	int local_fg_cpu_mask = atomic_read(&fg_cpu_mask);
 	int local_bg_cpu_mask = atomic_read(&bg_cpu_mask);
 
@@ -270,7 +270,7 @@ static void rebalance(struct softirq_action *h)
 {
 	if (PART_I_ONLY) {
 		/* treat all CPUs as same */
-		rebal_group(-1);
+		rebal_group(UINT_MAX);
 	} else {
 		rebal_group(atomic_read(&fg_cpu_mask));
 		rebal_group(atomic_read(&bg_cpu_mask));
@@ -297,8 +297,8 @@ __init void init_sched_grr_class(void)
 	int int_bg_cpu_mask = 0;
 
 	if (PART_I_ONLY) {
-		atomic_set(&fg_cpu_mask, -1);
-		atomic_set(&bg_cpu_mask, -1);
+		atomic_set(&fg_cpu_mask, UINT_MAX);
+		atomic_set(&bg_cpu_mask, UINT_MAX);
 	} else {
 		atomic_set(&fg_cpu_mask, ((1<<fg_cpus)-1));
 		int_bg_cpu_mask = ((1<<bg_cpus)-1);
